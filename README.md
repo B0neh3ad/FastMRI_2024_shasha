@@ -1,6 +1,7 @@
+## 주의!
+- Repository를 clone한 후 반드시 python 3.8.10 버전으로 가상환경(venv)을 만들 것
+---
 # 2024 baby varnet
-2024 SNU FastMRI challenge
-
 ## 1. 폴더 계층
 
 ### 폴더의 전체 구조
