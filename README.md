@@ -117,6 +117,17 @@ pip install torch numpy requests tqdm h5py scikit-image pyyaml opencv-python mat
 pip install wandb
 ```
 
+4. `.env` 파일 생성 후 환경변수 설정
+```bash
+DATA_DIR_PATH="{학습 data가 담긴 폴더의 경로}"
+RESULT_DIR_PATH="{result data를 저장할 폴더의 경로}"
+```
+```bash
+# ex)
+DATA_DIR_PATH="/home/Data"
+RESULT_DIR_PATH="../results"
+```
+
 ## 5. How to train?
 ```bash
 python train.py // sh train.sh
