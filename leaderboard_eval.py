@@ -111,6 +111,9 @@ if __name__ == '__main__':
     """
     parser.add_argument('-yp', '--path_your_data', type=Path, default='../result/test_Unet/reconstructions_leaderboard/')
     parser.add_argument('-key', '--output_key', type=str, default='reconstruction')
+
+    # for debug mode
+    parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
     
     args = parser.parse_args()
 

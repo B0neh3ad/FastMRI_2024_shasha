@@ -20,6 +20,9 @@ def parse():
     parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net')
     parser.add_argument("--input_key", type=str, default='kspace', help='Name of input key')
 
+    # for debug mode
+    parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
+
     args = parser.parse_args()
     return args
 

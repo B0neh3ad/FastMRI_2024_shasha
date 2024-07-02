@@ -33,6 +33,9 @@ def parse():
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
+    # for debug mode
+    parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
+
     args = parser.parse_args()
     return args
 
