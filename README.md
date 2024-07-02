@@ -130,22 +130,22 @@ RESULT_DIR_PATH="../results"
 
 ## 5. How to train?
 ```bash
-python train.py // sh train.sh
+sh train.sh
 ```
 - validation할 때, reconstruction data를 ```result/reconstructions_val/```에 저장합니다.
 - epoch 별로 validation dataset에 대한 loss를 기록합니다.
-- sh train.sh를 사용하여도 같은 결과를 얻으실 수 있습니다. Hyperparameter를 쉽게 조작할 수 있습니다.
+- `python train.py [Options]`를 입력해서 실행할 수도 있으나, `.env` 파일 내 환경변수의 원활한 사용을 위해 `sh train.sh`을 권장합니다.
 - seed 고정을 하여 이후에 Re-training하였을 때 같은 결과가 나와야 합니다.
 
 ## 6. How to reconstruct?
 ```bash
-python reconstruct.py // sh reconstruct.sh
+sh reconstruct.sh
 ```
-- leaderboard 평가를 위한 reconstruction data를 ```result/reconstructions_leaderboard```에 저장합니다.
+- leaderboard 평가를 위한 reconstruction data를 ```$RESULT_DIR_PATH/reconstructions_leaderboard```에 저장합니다.
 
 ## 7. How to evaluate LeaderBoard Dataset?
 ```bash
-python leaderboard_eval.py // sh leaderboard_eval.sh
+sh leaderboard_eval.sh
 ```
 - leaderboard 순위 경쟁을 위한 SSIM 값을 한번에 구합니다.
 - Total SSIM을 제출합니다.
