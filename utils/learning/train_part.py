@@ -24,8 +24,8 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
 
     for iter, data in enumerate(data_loader):
         mask, kspace, target, maximum, _, _ = data
-        mask = mask.cuda(non_blocking=True)
-        kspace = kspace.cuda(non_blocking=True)
+        mask = mask.cuda(non_blocking=True) # 2d mask converted in DataTransform object
+        kspace = kspace.cuda(non_blocking=True) # undersampled kspace converted in DataTransform object
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
 

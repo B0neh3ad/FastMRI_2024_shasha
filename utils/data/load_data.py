@@ -59,7 +59,7 @@ class SliceData(Dataset):
                 target = hf[self.target_key][dataslice]
                 attrs = dict(hf.attrs)
             
-        return self.transform(mask, input, target, attrs, kspace_fname.name, dataslice)
+        return self.transform(mask, input, target, attrs, kspace_fname.name, dataslice) # 바로 여기서 mask, kspace가 바뀜
 
 
 def create_data_loaders(data_path, args, shuffle=False, isforward=False):
