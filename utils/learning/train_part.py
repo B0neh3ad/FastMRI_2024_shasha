@@ -1,12 +1,10 @@
 import shutil
 import numpy as np
 import torch
-import torch.nn as nn
 import time
 import requests
 from tqdm import tqdm
-from pathlib import Path
-import copy
+import wandb
 
 from collections import defaultdict
 from utils.data.load_data import create_data_loaders
@@ -43,6 +41,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
                 f'Loss = {loss.item():.4g} '
                 f'Time = {time.perf_counter() - start_iter:.4f}s',
             )
+            wandb.log({"train_iter_loss": loss.item(), "train_interval_time": time.perf_counter() - start_iter})
             start_iter = time.perf_counter()
     total_loss = total_loss / len_loader
     return total_loss, time.perf_counter() - start_epoch
@@ -114,6 +113,18 @@ def download_model(url, fname):
 
         
 def train(args):
+    wandb.init(
+        project="FastMRI_2024_shasha",
+        config={
+            "batch_size": args.batch_size,
+            "num_epochs": args.num_epochs,
+            "learning_rate": args.lr,
+            "net_name": args.net_name,
+            "cascade": args.cascade,
+            "chans": args.chans,
+            "sens_chans": args.sens_chans
+        }
+    )
     device = torch.device(f'cuda:{args.GPU_NUM}' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
@@ -122,22 +133,6 @@ def train(args):
                    chans=args.chans, 
                    sens_chans=args.sens_chans)
     model.to(device=device)
-
-    """
-    # using pretrained parameter
-    VARNET_FOLDER = "https://dl.fbaipublicfiles.com/fastMRI/trained_models/varnet/"
-    MODEL_FNAMES = "brain_leaderboard_state_dict.pt"
-    if not Path(MODEL_FNAMES).exists():
-        url_root = VARNET_FOLDER
-        download_model(url_root + MODEL_FNAMES, MODEL_FNAMES)
-    
-    pretrained = torch.load(MODEL_FNAMES)
-    pretrained_copy = copy.deepcopy(pretrained)
-    for layer in pretrained_copy.keys():
-        if layer.split('.',2)[1].isdigit() and (args.cascade <= int(layer.split('.',2)[1]) <=11):
-            del pretrained[layer]
-    model.load_state_dict(pretrained)
-    """
 
     loss_type = SSIMLoss().to(device=device)
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
@@ -154,6 +149,7 @@ def train(args):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
         
         train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
+
         val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
         
         val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
@@ -175,6 +171,7 @@ def train(args):
             f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
             f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
         )
+        wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time}, step=epoch)
 
         if is_new_best:
             print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@NewRecord@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
@@ -183,3 +180,14 @@ def train(args):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
+
+    # save code
+    wandb.save("*.py")
+    # save validation loss log file
+    wandb.save("*/val_loss_log")
+    # save model weights
+    wandb.save("*.pt")
+    wandb.save("*.pth")
+    wandb.save("*.hdf5")
+
+    wandb.finish()
