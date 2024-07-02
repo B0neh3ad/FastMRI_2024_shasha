@@ -28,8 +28,9 @@ def parse():
 
 
 if __name__ == '__main__':
+    result_dir_path = os.environ['RESULT_DIR_PATH']
     args = parse()
-    args.exp_dir = '../result' / args.net_name / 'checkpoints'
+    args.exp_dir = result_dir_path / args.net_name / 'checkpoints'
     
     public_acc, private_acc = None, None
 
@@ -44,14 +45,16 @@ if __name__ == '__main__':
     assert(None not in [public_acc, private_acc])
     
     # Public Acceleration
+    print(f'Start reconstruction for public acc({public_acc}) data')
     args.data_path = args.path_data / public_acc # / "kspace"    
-    args.forward_dir = '../result' / args.net_name / 'reconstructions_leaderboard' / 'public'
+    args.forward_dir = result_dir_path / args.net_name / 'reconstructions_leaderboard' / 'public'
     print(f'Saved into {args.forward_dir}')
     forward(args)
     
     # Private Acceleration
+    print(f'Start reconstruction for private acc({private_acc}) data')
     args.data_path = args.path_data / private_acc # / "kspace"    
-    args.forward_dir = '../result' / args.net_name / 'reconstructions_leaderboard' / 'private'
+    args.forward_dir = result_dir_path / args.net_name / 'reconstructions_leaderboard' / 'private'
     print(f'Saved into {args.forward_dir}')
     forward(args)
     

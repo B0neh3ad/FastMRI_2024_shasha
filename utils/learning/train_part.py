@@ -1,3 +1,4 @@
+import glob
 import shutil
 import numpy as np
 import torch
@@ -20,7 +21,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     len_loader = len(data_loader)
     total_loss = 0.
 
-    for iter, data in enumerate(data_loader):
+    for iter, data in enumerate(tqdm(data_loader)):
         mask, kspace, target, maximum, _, _ = data
         mask = mask.cuda(non_blocking=True) # 2d mask converted in DataTransform object
         kspace = kspace.cuda(non_blocking=True) # undersampled kspace converted in DataTransform object
@@ -43,6 +44,9 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
             )
             wandb.log({"train_iter_loss": loss.item(), "train_interval_time": time.perf_counter() - start_iter})
             start_iter = time.perf_counter()
+
+        if args.debug and iter == args.report_interval:
+            break
     total_loss = total_loss / len_loader
     return total_loss, time.perf_counter() - start_epoch
 
@@ -54,7 +58,7 @@ def validate(args, model, data_loader):
     start = time.perf_counter()
 
     with torch.no_grad():
-        for iter, data in enumerate(data_loader):
+        for iter, data in enumerate(tqdm(data_loader)):
             mask, kspace, target, _, fnames, slices = data
             kspace = kspace.cuda(non_blocking=True)
             mask = mask.cuda(non_blocking=True)
@@ -63,6 +67,9 @@ def validate(args, model, data_loader):
             for i in range(output.shape[0]):
                 reconstructions[fnames[i]][int(slices[i])] = output[i].cpu().numpy()
                 targets[fnames[i]][int(slices[i])] = target[i].numpy()
+
+            if args.debug:
+                break
 
     for fname in reconstructions:
         reconstructions[fname] = np.stack(
@@ -125,6 +132,12 @@ def train(args):
             "sens_chans": args.sens_chans
         }
     )
+    wandb.define_metric("epoch")
+    wandb.define_metric("train_loss", step_metric="epoch")
+    wandb.define_metric("val_loss", step_metric="epoch")
+    wandb.define_metric("train_time", step_metric="epoch")
+    wandb.define_metric("val_time", step_metric="epoch")
+
     device = torch.device(f'cuda:{args.GPU_NUM}' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
@@ -145,7 +158,7 @@ def train(args):
     val_loader = create_data_loaders(data_path = args.data_path_val, args = args)
     
     val_loss_log = np.empty((0, 2))
-    for epoch in range(start_epoch, args.num_epochs):
+    for epoch in range(start_epoch, start_epoch + 1 if args.debug else args.num_epochs):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
         
         train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
@@ -171,7 +184,8 @@ def train(args):
             f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
             f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
         )
-        wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time}, step=epoch)
+        wandb.log({"epoch": epoch})
+        wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
 
         if is_new_best:
             print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@NewRecord@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
@@ -180,14 +194,18 @@ def train(args):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
-
+    result_dir_path = os.environ['RESULT_DIR_PATH']
     # save code
     wandb.save("*.py")
-    # save validation loss log file
-    wandb.save("*/val_loss_log")
+
     # save model weights
-    wandb.save("*.pt")
-    wandb.save("*.pth")
-    wandb.save("*.hdf5")
+    pt_files = glob.glob(os.path.join(result_dir_path, "**", "*.pt"), recursive=True)
+    for file in pt_files:
+        wandb.save(file)
+
+    # save log file
+    npy_files = glob.glob(os.path.join(result_dir_path, '**', '*.npy'), recursive=True)
+    for file in npy_files:
+        wandb.save(file)
 
     wandb.finish()

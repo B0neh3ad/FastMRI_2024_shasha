@@ -4,6 +4,8 @@ import shutil
 import os, sys
 from pathlib import Path
 
+import os
+
 if os.getcwd() + '/utils/model/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/model/')
 from utils.learning.train_part import train
@@ -46,10 +48,11 @@ if __name__ == '__main__':
     if args.seed is not None:
         seed_fix(args.seed)
 
-    args.exp_dir = '../result' / args.net_name / 'checkpoints'
-    args.val_dir = '../result' / args.net_name / 'reconstructions_val'
-    args.main_dir = '../result' / args.net_name / __file__
-    args.val_loss_dir = '../result' / args.net_name
+    result_dir_path = os.environ['RESULT_DIR_PATH']
+    args.exp_dir = result_dir_path / args.net_name / 'checkpoints'
+    args.val_dir = result_dir_path / args.net_name / 'reconstructions_val'
+    args.main_dir = result_dir_path / args.net_name / __file__
+    args.val_loss_dir = result_dir_path / args.net_name
 
     args.exp_dir.mkdir(parents=True, exist_ok=True)
     args.val_dir.mkdir(parents=True, exist_ok=True)
