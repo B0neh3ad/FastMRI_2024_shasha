@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if [-f .env]; then
+if [ -f .env ]; then
   export $(cat .env | grep -v '^#' | xargs)
 fi
 
-python train.py \
+python3.8 train.py \
   -b 1 \
   -e 5 \
   -l 0.001 \
