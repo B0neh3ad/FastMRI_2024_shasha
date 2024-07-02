@@ -1,3 +1,9 @@
+#!/bin/bash
+
+if [-f .env]; then
+  export $(cat .env | grep -v '^#' | xargs)
+fi
+
 python leaderboard_eval.py \
-  -lp '/home/Data/leaderboard' \
-  -yp '/root/fastmri_code/test/result/test_Varnet/reconstructions_leaderboard'
+  -lp "$DATA_DIR_PATH/leaderboard" \
+  -yp "$RESULT_DIR_PATH/test_Varnet/reconstructions_leaderboard"
