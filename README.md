@@ -80,7 +80,7 @@ Python 3.8.10
 ## 4. How to set?
 > 버전 문제 및 기존 패키지들과의 의존성 충돌 문제를 막기 위해, 반드시 python 3.8.10 가상환경 내에서만 작업할 것!
 
-1. python 3.8.10 설치
+1. python 3.8.10 설치 (Ubuntu 22.04 LTS 기준)
 ```bash
 sudo apt update
 sudo apt install -y build-essential checkinstall
