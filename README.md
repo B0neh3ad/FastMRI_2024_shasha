@@ -113,15 +113,8 @@ source venv/bin/activate
 
 3. requirement package 설치
 ```bash
-pip install torch
-pip install numpy
-pip install requests
-pip install tqdm
-pip install h5py
-pip install scikit-image
-pip install pyyaml
-pip install opencv-python
-pip install matplotlib
+pip install torch numpy requests tqdm h5py scikit-image pyyaml opencv-python matplotlib
+pip install wandb
 ```
 
 ## 5. How to train?
