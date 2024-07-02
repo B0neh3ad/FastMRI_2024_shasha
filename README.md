@@ -1,5 +1,5 @@
 ## 주의!
-- Repository를 clone한 후 반드시 python 3.8.10 버전으로 가상환경(venv)을 만들 것
+4. How to set 파트 내용을 추가했으니 반드시 읽기
 ---
 # 2024 baby varnet
 ## 1. 폴더 계층
@@ -78,10 +78,50 @@ Python 3.8.10
         * 현재 대회 GPU 세팅이 늦어지는 관계로, 세팅 완료 후 정확한 시간 기준을 공지드리겠습니다. 불편을 드려 죄송합니다.
 
 ## 4. How to set?
+> 버전 문제 및 기존 패키지들과의 의존성 충돌 문제를 막기 위해, 반드시 python 3.8.10 가상환경 내에서만 작업할 것!
+
+1. python 3.8.10 설치
 ```bash
-pip3 install numpy
-pip3 install h5py
-pip3 install scikit-image
+sudo apt update
+sudo apt install -y build-essential checkinstall
+sudo apt install -y libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev
+
+cd /usr/src
+sudo wget https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz
+sudo tar xzf Python-3.8.10.tgz
+
+cd Python-3.8.10
+sudo ./configure --enable-optimizations
+sudo make altinstall
+```
+```bash
+python3.8 --version # 3.8.10 버전이 출력되는지 확인!
+```
+
+2. 가상환경 생성 및 활성화
+```bash
+# repository directory 이동
+mkdir [directory 경로]
+cd [directory 경로]
+
+# 가상환경 생성
+python3.8 -m venv venv
+
+# 가상환경 활성화
+source venv/bin/activate
+```
+
+3. requirement package 설치
+```bash
+pip install torch
+pip install numpy
+pip install requests
+pip install tqdm
+pip install h5py
+pip install scikit-image
+pip install pyyaml
+pip install opencv-python
+pip install matplotlib
 ```
 
 ## 5. How to train?
