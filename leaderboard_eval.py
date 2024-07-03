@@ -9,6 +9,7 @@ from utils.common.loss_function import SSIMLoss
 import torch.nn.functional as F
 import cv2
 from pathlib import Path
+from tqdm import tqdm
 
 
 class SSIM(SSIMLoss):
@@ -61,7 +62,7 @@ def forward(args):
     idx = 0
     ssim_calculator = SSIM().to(device=device)
     with torch.no_grad():
-        for i_subject in range(58):
+        for i_subject in tqdm(range(58)):
             l_fname = os.path.join(args.leaderboard_data_path, 'brain_test' + str(i_subject + 1) + '.h5')
             y_fname = os.path.join(args.your_data_path, 'brain_test' + str(i_subject + 1) + '.h5')
             with h5py.File(l_fname, "r") as hf:
@@ -125,11 +126,13 @@ if __name__ == '__main__':
             private_acc = acc
 
     # public acceleration
+    print("[Start evaluation for public Acc]")
     args.leaderboard_data_path = args.path_leaderboard_data / public_acc / 'image'
     args.your_data_path = args.path_your_data / 'public'
     SSIM_public = forward(args)
 
     # private acceleration
+    print("[Start evaluation for private Acc]")
     args.leaderboard_data_path = args.path_leaderboard_data / private_acc / 'image'
     args.your_data_path = args.path_your_data / 'private'
     SSIM_private = forward(args)
