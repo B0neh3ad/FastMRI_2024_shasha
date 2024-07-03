@@ -115,6 +115,7 @@ source venv/bin/activate
 ```bash
 pip install torch numpy requests tqdm h5py scikit-image pyyaml opencv-python matplotlib
 pip install wandb
+pip install python-dotenv
 ```
 
 4. `.env` 파일 생성 후 환경변수 설정
