@@ -133,6 +133,7 @@ RESULT_DIR_PATH="../results"
 sh train.sh
 ```
 - validation할 때, reconstruction data를 ```result/reconstructions_val/```에 저장합니다.
+  - **반드시!! result 폴더를 따로 백업해둡시다.**
 - epoch 별로 validation dataset에 대한 loss를 기록합니다.
 - `python train.py [Options]`를 입력해서 실행할 수도 있으나, `.env` 파일 내 환경변수의 원활한 사용을 위해 `sh train.sh`을 권장합니다.
 - seed 고정을 하여 이후에 Re-training하였을 때 같은 결과가 나와야 합니다.
