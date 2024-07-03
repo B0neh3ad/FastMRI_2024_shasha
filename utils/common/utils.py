@@ -3,6 +3,9 @@ Copyright (c) Facebook, Inc. and its affiliates.
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 """
+import glob
+import os
+import wandb
 
 from skimage.metrics import structural_similarity
 import h5py
@@ -31,6 +34,12 @@ def save_reconstructions(reconstructions, out_dir, targets=None, inputs=None):
                 f.create_dataset('target', data=targets[fname])
             if inputs is not None:
                 f.create_dataset('input', data=inputs[fname])
+
+    result_dir_path = os.environ['RESULT_DIR_PATH']
+    # save reconstructions
+    h5_files = glob.glob(os.path.join(result_dir_path, "**", "*.h5"), recursive=True)
+    for file in h5_files:
+        wandb.save(file)
 
 def ssim_loss(gt, pred, maxval=None):
     """Compute Structural Similarity Index Metric (SSIM)
