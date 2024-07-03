@@ -97,7 +97,8 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         f=exp_dir / 'model.pt'
     )
     if is_new_best:
-        shutil.copyfile(exp_dir / 'model.pt', exp_dir / 'best_model.pt')
+        shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
+        shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
 
 
 def download_model(url, fname):
