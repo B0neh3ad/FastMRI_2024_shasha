@@ -38,7 +38,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         scaler.scale(loss).backward()
 
         # gradient accumulation
-        if (iter + 1) % args.iters_to_accumulate == 0:
+        if (iter + 1) % args.iters_to_grad_acc == 0:
             optimizer.zero_grad()
             # gradient clipping
             torch.nn.utils.clip_grad_norm(model.parameters(), max_norm=args.grad_clip)

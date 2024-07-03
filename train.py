@@ -39,6 +39,9 @@ def parse():
     # for gradient clip
     parser.add_argument('--grad-clip', type=float, default=5, help='Max norm of the gradientss')
 
+    # for gradient accumultation
+    parser.add_argument('--iters-to-grad-acc', type=int, default=4, help='iterations to gradient accumulation')
+
     args = parser.parse_args()
     return args
 
