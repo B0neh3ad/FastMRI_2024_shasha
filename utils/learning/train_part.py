@@ -29,12 +29,12 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
 
-        optimizer.zero_grad()
+        # automatic mixed precision (amp) <- 먼가 문제있음;;
+        # with torch.autocast(device_type="cuda"):
+        output = model(kspace, mask)
+        loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
 
-        # automatic mixed precision (amp)
-        with torch.autocast(device_type="cuda"):
-            output = model(kspace, mask)
-            loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
+        optimizer.zero_grad()
 
         # gradient scaling
         scaler.scale(loss).backward()
@@ -46,17 +46,16 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
 
             scaler.step(optimizer)
             scaler.update()
+            total_loss += loss.item() * args.iters_to_grad_acc
 
-        total_loss += loss.item()
-
-        if iter % args.report_interval == 0:
+        if (iter + 1) % args.report_interval == 0:
             print(
                 f'Epoch = [{epoch:3d}/{args.num_epochs:3d}] '
                 f'Iter = [{iter:4d}/{len(data_loader):4d}] '
-                f'Loss = {loss.item():.4g} '
+                f'Loss = {loss.item() * args.iters_to_grad_acc:.4g} '
                 f'Time = {time.perf_counter() - start_iter:.4f}s',
             )
-            wandb.log({"train_iter_loss": loss.item(), "train_interval_time": time.perf_counter() - start_iter})
+            wandb.log({"train_iter_loss": loss.item() * args.iters_to_grad_acc, "train_interval_time": time.perf_counter() - start_iter})
             start_iter = time.perf_counter()
 
         if args.debug and iter == args.report_interval:
