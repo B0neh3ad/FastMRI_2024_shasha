@@ -29,19 +29,21 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
 
+        optimizer.zero_grad()
+
         # automatic mixed precision (amp)
         with torch.autocast(device_type="cuda"):
             output = model(kspace, mask)
-            loss = loss_type(output, target, maximum) / args.iters_to_accumulate
+            loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
 
         # gradient scaling
         scaler.scale(loss).backward()
 
         # gradient accumulation
         if (iter + 1) % args.iters_to_grad_acc == 0:
-            optimizer.zero_grad()
             # gradient clipping
-            torch.nn.utils.clip_grad_norm(model.parameters(), max_norm=args.grad_clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=args.grad_clip)
+
             scaler.step(optimizer)
             scaler.update()
 

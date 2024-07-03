@@ -37,7 +37,7 @@ def parse():
     parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
 
     # for gradient clip
-    parser.add_argument('--grad-clip', type=float, default=5, help='Max norm of the gradientss')
+    parser.add_argument('--grad-clip', type=float, default=1.0, help='Max norm of the gradients')
 
     # for gradient accumultation
     parser.add_argument('--iters-to-grad-acc', type=int, default=4, help='iterations to gradient accumulation')
