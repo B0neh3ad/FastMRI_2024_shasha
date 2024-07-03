@@ -4,8 +4,6 @@ import shutil
 import os, sys
 from pathlib import Path
 
-import os
-
 if os.getcwd() + '/utils/model/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/model/')
 from utils.learning.train_part import train
@@ -37,6 +35,9 @@ def parse():
 
     # for debug mode
     parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
+
+    # for gradient clip
+    parser.add_argument('--grad-clip', type=float, default=5, help='Max norm of the gradientss')
 
     args = parser.parse_args()
     return args
