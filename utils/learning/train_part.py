@@ -151,7 +151,9 @@ def train(args):
             "net_name": args.net_name,
             "cascade": args.cascade,
             "chans": args.chans,
-            "sens_chans": args.sens_chans
+            "sens_chans": args.sens_chans,
+            "grad_clip": args.grad_clip,
+            "iters_to_grad_acc": args.iters_to_grad_acc
         }
     )
     wandb.define_metric("epoch")
@@ -183,6 +185,7 @@ def train(args):
 
     # save code
     wandb.save("*.py")
+
     for epoch in range(start_epoch, start_epoch + 1 if args.debug else args.num_epochs):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
         
