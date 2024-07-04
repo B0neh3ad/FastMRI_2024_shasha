@@ -126,8 +126,9 @@ RESULT_DIR_PATH="{result data를 저장할 폴더의 경로}"
 ```bash
 # ex)
 DATA_DIR_PATH="/home/Data"
-RESULT_DIR_PATH="../results"
+RESULT_DIR_PATH="./results"
 ```
+- `RESULT_DIR_PATH`는 반드시 repository dir의 하위 path여야 합니다! (안 그러면 wandb 에러남)
 
 ## 5. How to train?
 ```bash
