@@ -14,6 +14,7 @@ from utils.common.loss_function import SSIMLoss
 from utils.model.varnet import VarNet
 
 import os
+result_dir_path = os.environ['RESULT_DIR_PATH']
 
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()
@@ -112,6 +113,13 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
     if is_new_best:
         shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
         shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
+    try:
+        # save model weights
+        pt_files = glob.glob(os.path.join(result_dir_path, "**", "*.pt"), recursive=True)
+        for file in pt_files:
+            wandb.save(file)
+    except wandb.errors.Error as e:
+        print('checkpoint files are not saved since wandb.init() is not called')
 
 
 def download_model(url, fname):
@@ -172,6 +180,9 @@ def train(args):
     val_loader = create_data_loaders(data_path = args.data_path_val, args = args)
     
     val_loss_log = np.empty((0, 2))
+
+    # save code
+    wandb.save("*.py")
     for epoch in range(start_epoch, start_epoch + 1 if args.debug else args.num_epochs):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
         
@@ -208,14 +219,6 @@ def train(args):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
-    result_dir_path = os.environ['RESULT_DIR_PATH']
-    # save code
-    wandb.save("*.py")
-
-    # save model weights
-    pt_files = glob.glob(os.path.join(result_dir_path, "**", "*.pt"), recursive=True)
-    for file in pt_files:
-        wandb.save(file)
 
     # save log file
     npy_files = glob.glob(os.path.join(result_dir_path, '**', '*.npy'), recursive=True)
