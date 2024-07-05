@@ -77,10 +77,10 @@ def create_data_loaders(data_path, args, augmentor=None, mask_augmentor=None, sh
         forward = isforward
     )
 
-    # TODO: num_workers 늘리기
     data_loader = DataLoader(
         dataset=data_storage,
         batch_size=args.batch_size,
         shuffle=shuffle,
+        num_workers=4
     )
     return data_loader
