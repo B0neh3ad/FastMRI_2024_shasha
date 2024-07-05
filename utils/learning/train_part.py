@@ -25,6 +25,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     start_epoch = start_iter = time.perf_counter()
     len_loader = len(data_loader)
     total_loss = 0.
+    # gradient scaling
     scaler = torch.GradScaler(device='cuda')
 
     for iter, data in enumerate(tqdm(data_loader)):
@@ -40,9 +41,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
 
         optimizer.zero_grad()
-
-        # gradient scaling
-        scaler.scale(loss).backward()
+        loss.backward()
 
         # gradient accumulation
         if (iter + 1) % args.iters_to_grad_acc == 0 or iter == len_loader - 1:
@@ -50,8 +49,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
                 # gradient clipping
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=args.grad_clip)
 
-            scaler.step(optimizer)
-            scaler.update()
+            optimizer.step()
             total_loss += loss.item() * (args.iters_to_grad_acc if iter < len_loader - 1 else len_loader % args.iters_to_grad_acc)
 
         if (iter + 1) % args.report_interval == 0:
@@ -162,8 +160,14 @@ def train(args):
                 "cascade": args.cascade,
                 "chans": args.chans,
                 "sens_chans": args.sens_chans,
+                "grad_clip_on": args.grad_clip_on,
                 "grad_clip": args.grad_clip,
-                "iters_to_grad_acc": args.iters_to_grad_acc
+                "iters_to_grad_acc": args.iters_to_grad_acc,
+                "aug_on": args.aug_on,
+                "aug_strength": args.aug_strength,
+                "mask_aug_on": args.mask_aug_on,
+                "lr_scheduler_on": args.lr_scheduler_on,
+                "patience": args.patience
             }
         )
         wandb.define_metric("epoch")
