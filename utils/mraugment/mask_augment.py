@@ -34,7 +34,7 @@ class MaskAugmentor:
         else:
             p = 0.0
 
-        if self.aug_on and p > 0.0:
+        if self.aug_on and p > 0.0 and self.random_apply():
             mask, _ = self.mask_func(shape)
             mask = mask.byte()
         else:
