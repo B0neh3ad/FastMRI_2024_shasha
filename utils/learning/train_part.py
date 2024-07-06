@@ -62,7 +62,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
             total_loss += loss.item() * (args.iters_to_grad_acc if iter < len_loader - 1 else len_loader % args.iters_to_grad_acc)
 
         if (iter + 1) % args.report_interval == 0:
-            print(
+            tqdm.write(
                 f'Epoch = [{epoch:3d}/{args.num_epochs:3d}] '
                 f'Iter = [{iter:4d}/{len(data_loader):4d}] '
                 f'Loss = {loss.item() * args.iters_to_grad_acc:.4g} '
