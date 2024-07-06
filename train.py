@@ -59,6 +59,14 @@ def parse():
     # scheduler
     parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.', action='store_true')
     parser.add_argument('--patience', type=int, default=2, help='Patience for reduce learning rate')
+
+    load_dotenv()
+    result_dir_path = os.environ['RESULT_DIR_PATH']
+    data_dir_path = os.environ['DATA_DIR_PATH']
+
+    parser.add_argument('--result-dir-path', type=str, default=result_dir_path, help='Path to result directory')
+    parser.add_argument('--data-dir-path', type=str, default=data_dir_path, help='Path to data directory')
+
     args = parser.parse_args()
     return args
 
@@ -69,12 +77,10 @@ if __name__ == '__main__':
     if args.seed is not None:
         seed_fix(args.seed)
 
-    load_dotenv()
-    result_dir_path = os.environ['RESULT_DIR_PATH']
-    args.exp_dir = result_dir_path / args.net_name / 'checkpoints'
-    args.val_dir = result_dir_path / args.net_name / 'reconstructions_val'
-    args.main_dir = result_dir_path / args.net_name / __file__
-    args.val_loss_dir = result_dir_path / args.net_name
+    args.exp_dir = args.result_dir_path / args.net_name / 'checkpoints'
+    args.val_dir = args.result_dir_path / args.net_name / 'reconstructions_val'
+    args.main_dir = args.result_dir_path / args.net_name / __file__
+    args.val_loss_dir = args.result_dir_path / args.net_name
 
     args.exp_dir.mkdir(parents=True, exist_ok=True)
     args.val_dir.mkdir(parents=True, exist_ok=True)
