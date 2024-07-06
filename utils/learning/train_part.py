@@ -73,10 +73,9 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
                     "train_iter_loss": loss.item() * args.iters_to_grad_acc,
                     "train_interval_time": time.perf_counter() - start_iter
                 })
+            else:
+                break
             start_iter = time.perf_counter()
-
-        if args.debug and iter == args.report_interval:
-            break
     total_loss = total_loss / len_loader
     return total_loss, time.perf_counter() - start_epoch
 
