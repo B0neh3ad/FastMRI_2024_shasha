@@ -68,12 +68,12 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
                 f'Loss = {loss.item() * args.iters_to_grad_acc:.4g} '
                 f'Time = {time.perf_counter() - start_iter:.4f}s',
             )
-            if not args.debug:
+            if args.wandb_on:
                 wandb.log({
                     "train_iter_loss": loss.item() * args.iters_to_grad_acc,
                     "train_interval_time": time.perf_counter() - start_iter
                 })
-            else:
+            if args.debug:
                 break
             start_iter = time.perf_counter()
     total_loss = total_loss / len_loader
@@ -157,7 +157,7 @@ def download_model(url, fname):
 
         
 def train(args):
-    if not args.debug:
+    if args.wandb_on:
         wandb.init(
             project="FastMRI_2024_shasha",
             config={
@@ -214,7 +214,7 @@ def train(args):
     
     val_loss_log = np.empty((0, 2))
 
-    if not args.debug:
+    if args.wandb_on:
         # save code
         wandb.save("*.py")
 
@@ -246,7 +246,7 @@ def train(args):
             f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
             f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
         )
-        if not args.debug:
+        if args.wandb_on:
             wandb.log({"epoch": epoch})
             wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
 
@@ -258,7 +258,7 @@ def train(args):
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
 
-    if not args.debug:
+    if args.wandb_on:
         # save log file
         npy_files = glob.glob(os.path.join(args.result_dir_path, '**', '*.npy'), recursive=True)
         for file in npy_files:

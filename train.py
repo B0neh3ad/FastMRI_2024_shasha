@@ -60,6 +60,9 @@ def parse():
     parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.', action='store_true')
     parser.add_argument('--patience', type=int, default=2, help='Patience for reduce learning rate')
 
+    # wandb
+    parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')
+
     load_dotenv()
     result_dir_path = os.environ['RESULT_DIR_PATH']
     data_dir_path = os.environ['DATA_DIR_PATH']
