@@ -37,15 +37,21 @@ class SSIM(SSIMLoss):
         vx = self.cov_norm * (uxx - ux * ux)
         vy = self.cov_norm * (uyy - uy * uy)
         vxy = self.cov_norm * (uxy - ux * uy)
-        A1, A2, B1, B2 = (
+        A1, A2, A3, B1, B2 = (
             2 * ux * uy + C1,
             2 * vxy + C2,
+            2 * vx * vy + C2,
             ux ** 2 + uy ** 2 + C1,
             vx + vy + C2,
         )
         D = B1 * B2
         S = (A1 * A2) / D
-        return S.mean()
+
+        # Calculate Luminance, Contrast, Structure each
+        luminance = A1 / B1
+        contrast = A3 / B2
+        structure = A2 / A3
+        return S.mean(), (luminance.mean(), contrast.mean(), structure.mean())
 
 
 def forward(args):
@@ -63,8 +69,10 @@ def forward(args):
     ssim_total = 0
     idx = 0
     ssim_calculator = SSIM().to(device=device)
-    ssim_list = [0] * 30
-    slice_index_cnt = [0] * 30
+    ssim_list = [0] * 22
+    slice_index_cnt = [0] * 22
+
+    l_total, c_total, s_total = 0, 0, 0
     # dithering = Dithering(sigma=0.02)
     with torch.no_grad():
         for i_subject in tqdm(range(58)):
@@ -92,17 +100,30 @@ def forward(args):
                     recon = torch.from_numpy(recon).to(device=device)
 
                 # ssim_total += ssim_calculator(recon, target, maximum).cpu().numpy()
-                ssim_val = ssim_calculator(recon * mask, target * mask, maximum).cpu().numpy()
+                ssim_val, (l, c, s) = ssim_calculator(recon * mask, target * mask, maximum)
+                ssim_val = ssim_val.cpu().numpy()
                 ssim_list[i_slice] += ssim_val
                 slice_index_cnt[i_slice] += 1
                 ssim_total += ssim_val
                 idx += 1
 
-    print()
+                l.cpu().numpy()
+                l_total += l
+                c.cpu().numpy()
+                c_total += c
+                s.cpu().numpy()
+                s_total += s
+
+    print("-------------------------------------")
     for i_slice, ssim_val in enumerate(ssim_list):
         if slice_index_cnt[i_slice] == 0:
             break
         print(f"SSIM for slice {i_slice}: {ssim_val / slice_index_cnt[i_slice]}")
+    print("-------------------------------------")
+    print(f"Average Luminance: {l / idx}")
+    print(f"Average Contrast: {c / idx}")
+    print(f"Average Structure: {s / idx}")
+    print(l * c * s / idx)
     print("-------------------------------------")
     return ssim_total / idx
 
