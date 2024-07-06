@@ -35,21 +35,32 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
 
-        # automatic mixed precision (amp) <- 먼가 문제있음;;
-        # with torch.autocast(device_type="cuda"):
-        output = model(masked_kspace, mask)
-        loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
+        if args.amp:
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                output = model(masked_kspace, mask)
+                loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
+        else:
+            output = model(masked_kspace, mask)
+            loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
 
         optimizer.zero_grad()
-        loss.backward()
+
+        if args.amp:
+            scaler.scale(loss).backward()
+        else:
+            loss.backward()
 
         # gradient accumulation
         if (iter + 1) % args.iters_to_grad_acc == 0 or iter == len_loader - 1:
+            if args.amp:
+                scaler.unscale_(optimizer)
             if args.grad_clip_on:
-                # gradient clipping
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=args.grad_clip)
-
-            optimizer.step()
+            if args.amp:
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                optimizer.step()
             total_loss += loss.item() * (args.iters_to_grad_acc if iter < len_loader - 1 else len_loader % args.iters_to_grad_acc)
 
         if (iter + 1) % args.report_interval == 0:
@@ -192,14 +203,17 @@ def train(args):
     best_val_loss = 1.
     start_epoch = 0
 
-    augmentor = DataAugmentor(args, lambda: epoch)
+    train_augmentor = DataAugmentor(args, lambda: epoch)
+    val_augmentor = DataAugmentor(args, lambda: epoch, is_validation=True)
     mask_augmentor = MaskAugmentor(args, lambda: epoch,
                                    center_fractions=[0.08, 0.083],
                                    accelerations=[6, 7, 9],
                                    allow_any_combination=True)
+
     train_loader = create_data_loaders(data_path = args.data_path_train, args = args, shuffle=True,
-                                       augmentor=augmentor, mask_augmentor=mask_augmentor)
-    val_loader = create_data_loaders(data_path = args.data_path_val, args = args)
+                                       augmentor=train_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None)
+    val_loader = create_data_loaders(data_path = args.data_path_val, args = args,
+                                     augmentor=val_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None)
     
     val_loss_log = np.empty((0, 2))
 
