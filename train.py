@@ -36,14 +36,17 @@ def parse():
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
     # for debug mode
-    parser.add_argument('--debug', default=False, help='Set Debug mode', action='store_true')
+    parser.add_argument('--debug', default=False, help='Set debug mode', action='store_true')
+
+    # for automatic mixed precision
+    parser.add_argument('--amp', default=False, help='Set automatic mixed precision', action='store_true')
 
     # for gradient clip
-    parser.add_argument('--grad_clip-on', default=False, help='Set gradient clipping', action='store_true')
+    parser.add_argument('--grad-clip-on', default=False, help='Set gradient clipping', action='store_true')
     parser.add_argument('--grad-clip', type=float, default=0.01, help='Max norm of the gradients')
 
     # for gradient accumultation
-    parser.add_argument('--iters-to-grad-acc', type=int, default=1, help='iterations to gradient accumulation')
+    parser.add_argument('--iters-to-grad-acc', type=int, default=1, help='Iterations to gradient accumulation')
 
     # data augmentation config
     parser = DataAugmentor.add_augmentation_specific_args(parser)
