@@ -65,7 +65,7 @@ def forward(args):
     ssim_calculator = SSIM().to(device=device)
     ssim_list = [0] * 30
     slice_index_cnt = [0] * 30
-    dithering = Dithering(sigma=0.02)
+    # dithering = Dithering(sigma=0.02)
     with torch.no_grad():
         for i_subject in tqdm(range(58)):
             l_fname = os.path.join(args.leaderboard_data_path, 'brain_test' + str(i_subject + 1) + '.h5')
@@ -89,7 +89,6 @@ def forward(args):
 
                 with h5py.File(y_fname, "r") as hf:
                     recon = hf[args.output_key][i_slice]
-                    recon = dithering(recon)
                     recon = torch.from_numpy(recon).to(device=device)
 
                 # ssim_total += ssim_calculator(recon, target, maximum).cpu().numpy()
