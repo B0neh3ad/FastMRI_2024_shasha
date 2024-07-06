@@ -4,6 +4,8 @@ import shutil
 import os, sys
 from pathlib import Path
 
+from utils.mraugment.data_augment import DataAugmentor
+
 if os.getcwd() + '/utils/model/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/model/')
 from utils.learning.train_part import train
@@ -34,14 +36,28 @@ def parse():
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
     # for debug mode
-    parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
+    parser.add_argument('--debug', default=False, help='Set debug mode', action='store_true')
+
+    # for automatic mixed precision
+    parser.add_argument('--amp', default=False, help='Set automatic mixed precision', action='store_true')
 
     # for gradient clip
-    parser.add_argument('--grad-clip', type=float, default=1.0, help='Max norm of the gradients')
+    parser.add_argument('--grad-clip-on', default=False, help='Set gradient clipping', action='store_true')
+    parser.add_argument('--grad-clip', type=float, default=0.01, help='Max norm of the gradients')
 
     # for gradient accumultation
-    parser.add_argument('--iters-to-grad-acc', type=int, default=4, help='iterations to gradient accumulation')
+    parser.add_argument('--iters-to-grad-acc', type=int, default=1, help='Iterations to gradient accumulation')
 
+    # data augmentation config
+    parser = DataAugmentor.add_augmentation_specific_args(parser)
+
+    # mask augmentation config
+    parser.add_argument('--mask_aug_on', default=False, help='This switch turns mask augmentation on.', action='store_true')
+    parser.add_argument('--aug_weight_mask', type=float, default=1.0, help='Weight of mask augmentation probability. Augmentation probability will be multiplied by this constant')
+
+    # scheduler
+    parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.', action='store_true')
+    parser.add_argument('--patience', type=int, default=2, help='Patience for reduce learning rate')
     args = parser.parse_args()
     return args
 
