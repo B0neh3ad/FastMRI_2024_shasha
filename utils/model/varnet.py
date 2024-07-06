@@ -243,6 +243,8 @@ class VarNet(nn.Module):
         result = fastmri.rss(fastmri.complex_abs(fastmri.ifft2c(kspace_pred)), dim=1)
         height = result.shape[-2]
         width = result.shape[-1]
+
+        # TODO: add gaussian noise
         return result[..., (height - 384) // 2 : 384 + (height - 384) // 2, (width - 384) // 2 : 384 + (width - 384) // 2]
 
 
@@ -267,9 +269,15 @@ class VarNetBlock(nn.Module):
         self.dc_weight = nn.Parameter(torch.ones(1))
 
     def sens_expand(self, x: torch.Tensor, sens_maps: torch.Tensor) -> torch.Tensor:
+        """
+        expand image to kspace
+        """
         return fastmri.fft2c(fastmri.complex_mul(x, sens_maps))
 
     def sens_reduce(self, x: torch.Tensor, sens_maps: torch.Tensor) -> torch.Tensor:
+        """
+        expand kspace to image
+        """
         x = fastmri.ifft2c(x)
         return fastmri.complex_mul(x, fastmri.complex_conj(sens_maps)).sum(
             dim=1, keepdim=True
