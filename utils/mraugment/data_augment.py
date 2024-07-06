@@ -468,25 +468,25 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_min_brightness_factor',
             type=float,
-            default=1.35,
+            default=0.7,
             help='Minimum brightness factor applied to the image.'
         )
         parser.add_argument(
             '--aug_max_brightness_factor',
             type=float,
-            default=1.65,
+            default=2.1,
             help='Maximum brightness factor applied to the image.'
         )
         parser.add_argument(
             '--aug_min_contrast_factor',
             type=float,
-            default=0.9,
+            default=0.85,
             help='Maximum contrast factor applied to the image.'
         )
         parser.add_argument(
             '--aug_max_contrast_factor',
             type=float,
-            default=0.9,
+            default=0.95,
             help='Maximum contrast factor applied to the image.'
         )
         
