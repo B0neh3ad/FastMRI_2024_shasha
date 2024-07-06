@@ -78,64 +78,27 @@ Python 3.8.10
         * 현재 대회 GPU 세팅이 늦어지는 관계로, 세팅 완료 후 정확한 시간 기준을 공지드리겠습니다. 불편을 드려 죄송합니다.
 
 ## 4. How to set?
-> 버전 문제 및 기존 패키지들과의 의존성 충돌 문제를 막기 위해, 반드시 python 3.8.10 가상환경 내에서만 작업할 것!
-
-1. python 3.8.10 설치 (Ubuntu 22.04 LTS 기준)
-```bash
-sudo apt update
-sudo apt install -y build-essential checkinstall
-sudo apt install -y libeditreadline-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev
-
-cd /usr/src
-sudo wget https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz
-sudo tar xzf Python-3.8.10.tgz
-
-cd Python-3.8.10
-sudo ./configure --enable-optimizations
-sudo make altinstall
-```
-```bash
-python3.8 --version # 3.8.10 버전이 출력되는지 확인!
-```
-
-2. 가상환경 생성 및 활성화
-```bash
-# repository directory 이동
-mkdir [directory 경로]
-cd [directory 경로]
-
-# 가상환경 생성
-python3.8 -m venv venv
-
-# 가상환경 활성화
-source venv/bin/activate
-```
-
-3. requirement package 설치
-```bash
-pip install torch numpy requests tqdm h5py scikit-image pyyaml opencv-python matplotlib
-pip install wandb
-pip install python-dotenv
-```
-
-4. `.env` 파일 생성 후 환경변수 설정
-```bash
-DATA_DIR_PATH="{학습 data가 담긴 폴더의 경로}"
-RESULT_DIR_PATH="{result data를 저장할 폴더의 경로}"
-```
-```bash
-# ex)
-DATA_DIR_PATH="/home/Data"
-RESULT_DIR_PATH="./results"
-```
-- `RESULT_DIR_PATH`는 반드시 repository dir의 하위 path여야 합니다! (안 그러면 wandb 에러남)
+- Vessl 서버
+1. required package 설치
+     ```bash
+     pip install fastmri wandb python-dotenv matplotlib
+     ```
+    
+2. `.env` 파일 생성 후 환경변수 설정
+   ```bash
+   cd /FastMRI_2024_shasha
+   vim .env
+   ```
+   ```bash
+   DATA_DIR_PATH="{학습 data가 담긴 폴더의 경로}"
+   RESULT_DIR_PATH="{result data를 저장할 폴더의 경로}"
+   ```
 
 ## 5. How to train?
 ```bash
 sh train.sh
 ```
 - validation할 때, reconstruction data를 ```result/reconstructions_val/```에 저장합니다.
-  - **반드시!! result 폴더를 따로 백업해둡시다.**
 - epoch 별로 validation dataset에 대한 loss를 기록합니다.
 - `python train.py [Options]`를 입력해서 실행할 수도 있으나, `.env` 파일 내 환경변수의 원활한 사용을 위해 `sh train.sh`을 권장합니다.
 - seed 고정을 하여 이후에 Re-training하였을 때 같은 결과가 나와야 합니다.
