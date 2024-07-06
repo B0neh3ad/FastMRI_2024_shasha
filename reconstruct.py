@@ -6,6 +6,7 @@ if os.getcwd() + '/utils/model/' not in sys.path:
 
 from utils.learning.test_part import forward
 import time
+from dotenv import load_dotenv
 
     
 def parse():
@@ -29,6 +30,7 @@ def parse():
 
 
 if __name__ == '__main__':
+    load_dotenv()
     result_dir_path = os.environ['RESULT_DIR_PATH']
     args = parse()
     args.exp_dir = result_dir_path / args.net_name / 'checkpoints'

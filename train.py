@@ -3,6 +3,7 @@ import argparse
 import shutil
 import os, sys
 from pathlib import Path
+from dotenv import load_dotenv
 
 from utils.mraugment.data_augment import DataAugmentor
 
@@ -68,6 +69,7 @@ if __name__ == '__main__':
     if args.seed is not None:
         seed_fix(args.seed)
 
+    load_dotenv()
     result_dir_path = os.environ['RESULT_DIR_PATH']
     args.exp_dir = result_dir_path / args.net_name / 'checkpoints'
     args.val_dir = result_dir_path / args.net_name / 'reconstructions_val'
