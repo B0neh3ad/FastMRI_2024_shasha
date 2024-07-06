@@ -48,6 +48,10 @@ class SliceData(Dataset):
         :param slice_ind: index of the slice
         :param num_slices: total number of slices in the file
         """
+        # evaluation mode
+        if self.current_epoch_fn is None:
+            return True
+
         epoch = self.current_epoch_fn()
 
         # exclude outlier
