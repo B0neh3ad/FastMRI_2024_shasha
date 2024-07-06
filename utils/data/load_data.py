@@ -17,6 +17,10 @@ class SliceData(Dataset):
         if not forward:
             image_files = list(Path(root / "image").iterdir())
             for fname in sorted(image_files):
+                # exclude outlier
+                if 'acc5_24' in fname:
+                    continue
+
                 num_slices = self._get_metadata(fname)
 
                 self.image_examples += [
@@ -25,6 +29,10 @@ class SliceData(Dataset):
 
         kspace_files = list(Path(root / "kspace").iterdir())
         for fname in sorted(kspace_files):
+            # exclude outlier
+            if 'acc5_24' in fname:
+                continue
+
             num_slices = self._get_metadata(fname)
 
             self.kspace_examples += [
