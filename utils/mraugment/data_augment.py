@@ -46,11 +46,11 @@ class AugmentationPipeline:
         # ---------------------------
         if self.random_apply('brightness'):
             brightness_factor = self.rng.uniform(self.hparams.aug_min_brightness_factor, self.hparams.aug_max_brightness_factor)
-            im = TF.adjust_brightness(im.unsqueeze(1), brightness_factor).squeeze(1)
+            im = TF.adjust_brightness(im.unsqueeze(2), brightness_factor).squeeze(2)
 
         if self.random_apply('contrast'):
             contrast_factor = self.rng.uniform(self.hparams.aug_min_contrast_factor, self.hparams.aug_max_contrast_factor)
-            im = TF.adjust_contrast(im.unsqueeze(1), contrast_factor).squeeze(1)
+            im = TF.adjust_contrast(im.unsqueeze(2), contrast_factor).squeeze(2)
 
         # If in validation, apply color transforms only
         if is_validation:
