@@ -18,8 +18,6 @@ import os
 from utils.mraugment.data_augment import DataAugmentor
 from utils.mraugment.mask_augment import MaskAugmentor
 
-result_dir_path = os.environ['RESULT_DIR_PATH']
-
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()
     start_epoch = start_iter = time.perf_counter()
@@ -133,7 +131,7 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
     try:
         # save model weights
-        pt_files = glob.glob(os.path.join(result_dir_path, "**", "*.pt"), recursive=True)
+        pt_files = glob.glob(os.path.join(args.result_dir_path, "**", "*.pt"), recursive=True)
         for file in pt_files:
             wandb.save(file)
     except wandb.errors.Error as e:
@@ -263,7 +261,7 @@ def train(args):
 
     if not args.debug:
         # save log file
-        npy_files = glob.glob(os.path.join(result_dir_path, '**', '*.npy'), recursive=True)
+        npy_files = glob.glob(os.path.join(args.result_dir_path, '**', '*.npy'), recursive=True)
         for file in npy_files:
             wandb.save(file)
 
