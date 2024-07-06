@@ -52,3 +52,5 @@ class SSIMLoss(nn.Module):
         S = (A1 * A2) / D
 
         return 1 - S.mean()
+
+# TODO: slice_idx 활용하여 idx 낮을수록 가중치를 높게 부여하는 함수 만들기

@@ -38,15 +38,14 @@ class DataTransform:
             target: Target image.
             attrs: Acquisition related information stored in the HDF5 object.
             fname: File name.
-            slice: Serial number of the slice.
+            slice: The slice index.
         Returns:
             mask: The applied sampling 2D mask
             masked_kspace: k-space after applying sampling mask.
             target: The target image (if applicable).
+            maximum: Maximum image value.
             fname: File name.
-            slice_num: The slice index.
-            max_value: Maximum image value.
-            crop_size: The size to crop the final image.
+            slice: The slice index.
         """
         if not self.isforward:
             target = to_tensor(target)

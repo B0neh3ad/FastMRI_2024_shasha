@@ -27,7 +27,9 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     scaler = torch.GradScaler(device='cuda')
 
     for iter, data in enumerate(tqdm(data_loader)):
-        mask, masked_kspace, target, maximum, _, _ = data
+        # TODO: slice_idx 활용하여 idx 낮을수록 가중치 높게 loss 함수 수정
+        # TODO: slice_idx가 높은 데이터들은 점점 제외하기
+        mask, masked_kspace, target, maximum, _, slice_idx = data
         mask = mask.cuda(non_blocking=True)
         masked_kspace = masked_kspace.cuda(non_blocking=True) # undersampled kspace converted in DataTransform object
         target = target.cuda(non_blocking=True)
@@ -208,9 +210,11 @@ def train(args):
                                    allow_any_combination=True)
 
     train_loader = create_data_loaders(data_path = args.data_path_train, args = args, shuffle=True,
-                                       augmentor=train_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None)
+                                       augmentor=train_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None,
+                                       current_epoch_fn=lambda: epoch)
     val_loader = create_data_loaders(data_path = args.data_path_val, args = args,
-                                     augmentor=val_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None)
+                                     augmentor=val_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None,
+                                     current_epoch_fn=lambda: epoch)
     
     val_loss_log = np.empty((0, 2))
 
