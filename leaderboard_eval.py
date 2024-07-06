@@ -11,6 +11,8 @@ import cv2
 from pathlib import Path
 from tqdm import tqdm
 
+from utils.data.postprocess import Dithering
+
 
 class SSIM(SSIMLoss):
     def __init__(self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03):
@@ -61,6 +63,9 @@ def forward(args):
     ssim_total = 0
     idx = 0
     ssim_calculator = SSIM().to(device=device)
+    ssim_list = [0] * 30
+    slice_index_cnt = [0] * 30
+    dithering = Dithering(sigma=0.02)
     with torch.no_grad():
         for i_subject in tqdm(range(58)):
             l_fname = os.path.join(args.leaderboard_data_path, 'brain_test' + str(i_subject + 1) + '.h5')
@@ -84,12 +89,22 @@ def forward(args):
 
                 with h5py.File(y_fname, "r") as hf:
                     recon = hf[args.output_key][i_slice]
+                    recon = dithering(recon)
                     recon = torch.from_numpy(recon).to(device=device)
 
                 # ssim_total += ssim_calculator(recon, target, maximum).cpu().numpy()
-                ssim_total += ssim_calculator(recon * mask, target * mask, maximum).cpu().numpy()
+                ssim_val = ssim_calculator(recon * mask, target * mask, maximum).cpu().numpy()
+                ssim_list[i_slice] += ssim_val
+                slice_index_cnt[i_slice] += 1
+                ssim_total += ssim_val
                 idx += 1
 
+    print()
+    for i_slice, ssim_val in enumerate(ssim_list):
+        if slice_index_cnt[i_slice] == 0:
+            break
+        print(f"SSIM for slice {i_slice}: {ssim_val / slice_index_cnt[i_slice]}")
+    print("-------------------------------------")
     return ssim_total / idx
 
 
