@@ -26,7 +26,9 @@ class AugmentationPipeline:
                       'shearing': hparams.aug_weight_shearing,
                       'rot90': hparams.aug_weight_rot90,
                       'fliph': hparams.aug_weight_fliph,
-                      'flipv': hparams.aug_weight_flipv
+                      'flipv': hparams.aug_weight_flipv,
+                      'brightness': hparams.aug_weight_brightness,
+                      'contrast': hparams.aug_weight_contrast
         }
         self.upsample_augment = hparams.aug_upsample
         self.upsample_factor = hparams.aug_upsample_factor
@@ -35,10 +37,32 @@ class AugmentationPipeline:
         self.augmentation_strength = 0.0
         self.rng = np.random.RandomState()
 
-    def augment_image(self, im, max_output_size=None):
+    def augment_image(self, im, max_output_size=None, is_validation=False):
         # Trailing dims must be image height and width (for torchvision) 
         im = complex_channel_first(im)
-        
+
+        # ---------------------------
+        # color transforms
+        # ---------------------------
+        if self.random_apply('brightness'):
+            brightness_factor = self.rng.uniform(self.hparams.aug_min_brightness_factor, self.hparams.aug_max_brightness_factor)
+            im = TF.adjust_brightness(im.unsqueeze(1), brightness_factor).squeeze(1)
+
+        if self.random_apply('contrast'):
+            contrast_factor = self.rng.uniform(self.hparams.aug_min_contrast_factor, self.hparams.aug_max_contrast_factor)
+            im = TF.adjust_contrast(im.unsqueeze(1), contrast_factor).squeeze(1)
+
+        # If in validation, apply color transforms only
+        if is_validation:
+            # Final cropping if augmented image is too large
+            if max_output_size is not None:
+                im = crop_if_needed(im, max_output_size)
+
+            # Reset original channel ordering
+            im = complex_channel_last(im)
+
+            return im
+
         # ---------------------------  
         # pixel preserving transforms
         # ---------------------------  
@@ -134,9 +158,9 @@ class AugmentationPipeline:
         
         return im
     
-    def augment_from_kspace(self, kspace, target_size, max_train_size=None):
+    def augment_from_kspace(self, kspace, target_size, max_train_size=None, is_validation=False):
         im = ifft2c(kspace)
-        im = self.augment_image(im, max_output_size=max_train_size)
+        im = self.augment_image(im, max_output_size=max_train_size, is_validation=is_validation)
         target = self.im_to_target(im, target_size)
         kspace = fft2c(im)
         return kspace, target
@@ -215,7 +239,7 @@ class DataAugmentor:
     to the training data.
     """
         
-    def __init__(self, hparams, current_epoch_fn):
+    def __init__(self, hparams, current_epoch_fn, is_validation=False):
         """
         hparams: refer to the arguments below in add_augmentation_specific_args
         current_epoch_fn: this function has to return the current epoch as an integer 
@@ -227,6 +251,7 @@ class DataAugmentor:
         if self.aug_on:
             self.augmentation_pipeline = AugmentationPipeline(hparams)
         self.max_train_resolution = hparams.max_train_resolution
+        self.is_validation = is_validation
         
     def __call__(self, kspace, target_size):
         """
@@ -241,12 +266,13 @@ class DataAugmentor:
             self.augmentation_pipeline.set_augmentation_strength(p)
         else:
             p = 0.0
-        
+
         # Augment if needed
         if self.aug_on and p > 0.0:
             kspace, target = self.augmentation_pipeline.augment_from_kspace(kspace,
                                                                           target_size=target_size,
-                                                                          max_train_size=self.max_train_resolution)
+                                                                          max_train_size=self.max_train_resolution,
+                                                                          is_validation=self.is_validation)
         else:
             # Crop in image space if image is too large
             if self.max_train_resolution is not None:
@@ -372,7 +398,7 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_weight_rot90', 
             type=float, 
-            default=1.0, 
+            default=0.0,
             help='Weight of probability of rotation by multiples of 90 degrees. Augmentation probability will be multiplied by this constant'
         )  
         parser.add_argument(
@@ -386,7 +412,19 @@ class DataAugmentor:
             type=float,
             default=1.0, 
             help='Weight of vertical flip probability. Augmentation probability will be multiplied by this constant'
-        ) 
+        )
+        parser.add_argument(
+            '--aug_weight_brightness',
+            type=float,
+            default=1.0,
+            help='Weight of probability of luminance variation. Augmentation probability will be multiplied to this constant'
+        )
+        parser.add_argument(
+            '--aug_weight_contrast',
+            type=float,
+            default=1.0,
+            help='Weight of probability of contrast variation. Augmentation probability will be multiplied to this constant'
+        )
 
         # --------------------------------------------
         # Related to transformation limits
@@ -426,6 +464,30 @@ class DataAugmentor:
             type=float, 
             default=0.25, 
             help='Maximum scaling applied as fraction of image dimensions. If set to s, a scaling factor between 1.0-s and 1.0+s will be applied.'
+        )
+        parser.add_argument(
+            '--aug_min_brightness_factor',
+            type=float,
+            default=1.35,
+            help='Minimum brightness factor applied to the image.'
+        )
+        parser.add_argument(
+            '--aug_max_brightness_factor',
+            type=float,
+            default=1.65,
+            help='Maximum brightness factor applied to the image.'
+        )
+        parser.add_argument(
+            '--aug_min_contrast_factor',
+            type=float,
+            default=0.9,
+            help='Maximum contrast factor applied to the image.'
+        )
+        parser.add_argument(
+            '--aug_max_contrast_factor',
+            type=float,
+            default=0.9,
+            help='Maximum contrast factor applied to the image.'
         )
         
         #---------------------------------------------------
