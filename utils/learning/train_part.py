@@ -201,6 +201,7 @@ def train(args):
 
     best_val_loss = 1.
     start_epoch = 0
+    epoch = start_epoch
 
     train_augmentor = DataAugmentor(args, lambda: epoch)
     val_augmentor = DataAugmentor(args, lambda: epoch, is_validation=True)
