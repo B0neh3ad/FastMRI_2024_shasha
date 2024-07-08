@@ -19,6 +19,7 @@ class SliceData(Dataset):
             image_files = list(Path(root / "image").iterdir())
             for fname in sorted(image_files):
                 num_slices = self._get_metadata(fname)
+                # print(f"fname: {fname}, num_slices: {num_slices}")
 
                 self.image_examples += [
                     (fname, slice_ind) for slice_ind in range(num_slices) if self.should_include(fname, slice_ind, num_slices)
@@ -27,6 +28,7 @@ class SliceData(Dataset):
         kspace_files = list(Path(root / "kspace").iterdir())
         for fname in sorted(kspace_files):
             num_slices = self._get_metadata(fname)
+            # print(f"fname: {fname}, num_slices: {num_slices}")
 
             self.kspace_examples += [
                 (fname, slice_ind) for slice_ind in range(num_slices) if self.should_include(fname, slice_ind, num_slices)
@@ -71,7 +73,7 @@ class SliceData(Dataset):
 
         with h5py.File(kspace_fname, "r") as hf:
             if dataslice >= hf[self.input_key].shape[0]:
-                raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {kspace_fname}")
+                raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {kspace_fname} which has {hf[self.input_key].shape[0]} slices.")
             kspace = hf[self.input_key][dataslice]
             mask = np.array(hf["mask"])
         if self.forward:
@@ -80,7 +82,7 @@ class SliceData(Dataset):
         else:
             with h5py.File(image_fname, "r") as hf:
                 if dataslice >= hf[self.target_key].shape[0]:
-                    raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {image_fname}")
+                    raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {image_fname} which has {hf[self.target_key].shape[0]} slices.")
                 target = hf[self.target_key][dataslice]
                 attrs = dict(hf.attrs)
 
