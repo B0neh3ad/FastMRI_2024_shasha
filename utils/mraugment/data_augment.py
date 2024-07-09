@@ -7,6 +7,8 @@ import numpy as np
 from math import exp
 import torch
 import torchvision.transforms.functional as TF
+from PIL import Image
+
 from utils.mraugment.helpers import complex_crop_if_needed, crop_if_needed, complex_channel_first, complex_channel_last
 from fastmri.data import transforms as T
 from fastmri import fft2c, ifft2c, rss_complex, complex_abs
@@ -23,6 +25,7 @@ class AugmentationPipeline:
                       'translation': hparams.aug_weight_translation,
                       'rotation': hparams.aug_weight_rotation,
                       'scaling': hparams.aug_weight_scaling,
+                      'scalex': hparams.aug_weight_scalex,
                       'shearing': hparams.aug_weight_shearing,
                       'rot90': hparams.aug_weight_rot90,
                       'fliph': hparams.aug_weight_fliph,
@@ -114,9 +117,15 @@ class AugmentationPipeline:
         # Scaling
         if self.random_apply('scaling'):
             interp = True
-            scale = self.rng.uniform(1-self.hparams.aug_max_scaling, 1 + self.hparams.aug_max_scaling)
+            scale = self.rng.uniform(1 - self.hparams.aug_max_scaling, 1 + self.hparams.aug_max_scaling)
         else:
             scale = 1.
+
+        # Horizontal Scaling
+        if self.random_apply('scalex'):
+            scale_x = self.rng.uniform(self.hparams.aug_min_scalex, self.hparams.aug_max_scalex)
+        else:
+            scale_x = 1.
 
         # Upsample if needed
         upsample = interp and self.upsample_augment
@@ -129,13 +138,14 @@ class AugmentationPipeline:
         # Apply interpolating transformations 
         # Affine transform - if any of the affine transforms is randomly picked
         if interp:
+            im = self._get_horizontally_scaled_image(im, scale_x)
             h, w = im.shape[-2:]
             pad = self._get_affine_padding_size(im, rot, scale, (shear_x, shear_y))
             im = TF.pad(im, padding=pad, padding_mode='reflect')
             im = TF.affine(im,
                            angle=rot,
                            scale=scale,
-                           shear=(shear_x, shear_y),
+                           shear=[shear_x, shear_y],
                            translate=[0, 0],
                            interpolation=TF.InterpolationMode.BILINEAR
                           )
@@ -209,7 +219,7 @@ class AugmentationPipeline:
         bounding_box = all_corners.amax(dim=1) - all_corners.amin(dim=1)
         px = torch.clip(torch.floor((bounding_box[0] - h) / 2), min=0.0, max=h-1) 
         py = torch.clip(torch.floor((bounding_box[1] - w) / 2),  min=0.0, max=w-1)
-        return int(py.item()), int(px.item())
+        return [int(py.item()), int(px.item())]
 
     @staticmethod
     def _get_translate_padding_and_crop(im, translation):
@@ -229,6 +239,21 @@ class AugmentationPipeline:
             pad[2] = min(-t_y, w - 1) # pad right
             left = pad[2]
         return pad, top, left
+
+    @staticmethod
+    def _get_horizontally_scaled_image(im, scale_x: float = 1.0):
+        h, w = im.shape[-2:]
+        scaled_w = int(scale_x * w)
+        if scale_x < 1.0:
+            scaled_img = TF.resize(im, [h, scaled_w])
+            new_im = torch.zeros(im.shape)
+            padding = (w - scaled_w) // 2
+            new_im[..., padding:padding + scaled_w] = scaled_img
+        else:
+            crop = (scaled_w - w) // 2
+            new_im = im[..., crop:crop + scaled_w]
+        return new_im
+
 
             
 class DataAugmentor:
@@ -396,6 +421,12 @@ class DataAugmentor:
             help='Weight of scaling probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
+            '--aug_weight_scalex',
+            type=float,
+            default=1.0,
+            help='Weight of horizontal scaling probability. Augmentation probability will be multiplied by this constant'
+        )
+        parser.add_argument(
             '--aug_weight_rot90', 
             type=float, 
             default=0.0,
@@ -464,6 +495,18 @@ class DataAugmentor:
             type=float, 
             default=0.25, 
             help='Maximum scaling applied as fraction of image dimensions. If set to s, a scaling factor between 1.0-s and 1.0+s will be applied.'
+        )
+        parser.add_argument(
+            '--aug_min_scalex',
+            type=float,
+            default=1.0,
+            help='Minimum horizontal scaling applied as fraction of image dimensions.'
+        )
+        parser.add_argument(
+            '--aug_max_scalex',
+            type=float,
+            default=1.0,
+            help='Maximum horizontal scaling applied as fraction of image dimensions.'
         )
         parser.add_argument(
             '--aug_min_brightness_factor',
