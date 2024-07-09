@@ -83,8 +83,13 @@ Python 3.8.10
      ```bash
      pip install fastmri wandb python-dotenv matplotlib
      ```
+
+2. torch cpu 버전으로 설치될 경우
+    ```bash
+    pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu121
+    ```
     
-2. `.env` 파일 생성 후 환경변수 설정
+3. `.env` 파일 생성 후 환경변수 설정
    ```bash
    cd /FastMRI_2024_shasha
    vim .env

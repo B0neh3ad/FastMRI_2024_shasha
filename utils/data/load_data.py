@@ -19,6 +19,7 @@ class SliceData(Dataset):
             image_files = list(Path(root / "image").iterdir())
             for fname in sorted(image_files):
                 num_slices = self._get_metadata(fname)
+                # print(f"fname: {fname}, num_slices: {num_slices}")
 
                 self.image_examples += [
                     (fname, slice_ind) for slice_ind in range(num_slices) if self.should_include(fname, slice_ind, num_slices)
@@ -27,6 +28,7 @@ class SliceData(Dataset):
         kspace_files = list(Path(root / "kspace").iterdir())
         for fname in sorted(kspace_files):
             num_slices = self._get_metadata(fname)
+            # print(f"fname: {fname}, num_slices: {num_slices}")
 
             self.kspace_examples += [
                 (fname, slice_ind) for slice_ind in range(num_slices) if self.should_include(fname, slice_ind, num_slices)
@@ -70,18 +72,21 @@ class SliceData(Dataset):
         kspace_fname, dataslice = self.kspace_examples[i]
 
         with h5py.File(kspace_fname, "r") as hf:
+            if dataslice >= hf[self.input_key].shape[0]:
+                raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {kspace_fname} which has {hf[self.input_key].shape[0]} slices.")
             kspace = hf[self.input_key][dataslice]
-            mask =  np.array(hf["mask"])
+            mask = np.array(hf["mask"])
         if self.forward:
             target = -1
             attrs = -1
         else:
             with h5py.File(image_fname, "r") as hf:
+                if dataslice >= hf[self.target_key].shape[0]:
+                    raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {image_fname} which has {hf[self.target_key].shape[0]} slices.")
                 target = hf[self.target_key][dataslice]
                 attrs = dict(hf.attrs)
-            
-        return self.transform(mask, kspace, target, attrs, kspace_fname.name, dataslice) # 바로 여기서 mask, kspace가 바뀜
 
+        return self.transform(mask, kspace, target, attrs, kspace_fname.name, dataslice)
 
 def create_data_loaders(data_path, args, current_epoch_fn=None, augmentor=None, mask_augmentor=None, shuffle=False, isforward=False):
     if isforward == False:
