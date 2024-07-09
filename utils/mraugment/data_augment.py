@@ -286,6 +286,7 @@ class DataAugmentor:
     def schedule_p(self):
         """
         Schedule the augmentation according to the self.aug_schedule
+        return: augmentation strength in [0, 1]
         """
         D = self.hparams.aug_delay
         T = self.hparams.num_epochs

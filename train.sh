@@ -24,3 +24,12 @@ python3.8 train.py \
 # 사용 금지 option 목록
 # --amp: loss 값이 이상해짐
 # --aug-weight-rot90: MRAugment의 rot90을 이용한 90도 회전 시 가로 세로 길이가 바뀌어 mask 사용 불가
+
+# -g, --GPU-NUM: Specifies the GPU number to use for training.
+# -b, --batch-size: Sets the batch size for training.
+# -e, --num-epochs: Defines the number of epochs for the training process.
+# -l, --lr: Sets the learning rate.
+# -r, --report-interval: Determines how often to report training progress.
+# -n, --net-name: Names the network for identification purposes.
+# -t, --data-path-train: Specifies the directory containing training data.
+# -v, --data-path-val: Specifies the directory containing validation data.
