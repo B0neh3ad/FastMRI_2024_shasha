@@ -15,17 +15,22 @@ python3.8 train.py \
   --aug_on \
   --mask_aug_on \
   --aug_strength 0.5 \
-  --debug \
+  --cascade 6 \
+  --chans 15 \
+  --sens_chans 4 \
+  --aug_weight_translation 0.5 \
+  --aug_weight_rotation 0.5 \
+  --aug_weight_shearing 0.0 \
+  --aug_weight_scaling 0.5 \
+  --aug_weight_flipv 0.0 \
+  --aug_weight_brightness 0.0 \
+  --aug_weight_contrast 0.5 \
+  --aug_max_translation_x 0.1 \
+  --aug_max_translation_y 0.1 \
+  --aug_max_rotation 10.0 \
+  --aug_max_scaling 0.2 \
 
 
-#  --cascade 6 \
-#  --chans 15 \
-#  --sens_chans 4
-
-#  --aug_weight_translation 0.5 \
-#  --aug_weight_rotation 0.5 \
-#  --aug_weight_shearing 0.5 \
-#  --aug_weight_scale 0.5 \
 
 # 사용 금지 option 목록
 # --amp: loss 값이 이상해짐
