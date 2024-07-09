@@ -3,6 +3,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 """
+import math
 
 import torch
 import torch.nn as nn
@@ -53,4 +54,73 @@ class SSIMLoss(nn.Module):
 
         return 1 - S.mean()
 
-# TODO: slice_idx 활용하여 idx 낮을수록 가중치를 높게 부여하는 함수 만들기
+class MixedLoss(nn.Module):
+    """
+    Mixed loss module. (MS-SSIM + L1)
+    """
+
+    def __init__(self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, alpha: float = 0.84):
+        """
+        Args:
+            win_size: Window size for SSIM calculation.
+            k1: k1 parameter for SSIM calculation.
+            k2: k2 parameter for SSIM calculation.
+            alpha: mixing factor of SSIM and L1 loss.
+        """
+        super(MixedLoss, self).__init__()
+        self.alpha = alpha
+        self.ms_ssim = SSIMLoss(win_size=win_size, k1=k1, k2=k2)
+        self.l1_loss = nn.L1Loss(reduction='mean')
+
+    def forward(self, X, Y, data_range):
+        ms_ssim_val = self.ms_ssim(X, Y, data_range)
+        l1_loss_val = self.l1_loss(X, Y)
+        mixed_loss_val = self.alpha * ms_ssim_val + (1 - self.alpha) * l1_loss_val
+        return mixed_loss_val
+
+class CustomFocalLoss(nn.Module):
+    """
+    Focal loss (with MS-SSIM loss) module.
+    """
+
+    def __init__(self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, gamma: float = 2.0):
+        """
+        Args:
+            win_size: Window size for SSIM calculation.
+            k1: k1 parameter for SSIM calculation.
+            k2: k2 parameter for SSIM calculation.
+            gamma: factor for focal loss.
+        """
+        super(CustomFocalLoss, self).__init__()
+        self.gamma = gamma
+        self.ms_ssim = SSIMLoss(win_size=win_size, k1=k1, k2=k2)
+
+    def forward(self, X, Y, data_range):
+        ms_ssim_val = self.ms_ssim(X, Y, data_range)
+        focal_loss_val = (1 - (1 - ms_ssim_val) ** self.gamma) * ms_ssim_val
+        return focal_loss_val
+
+class IndexBasedWeightedLoss(nn.Module):
+    """
+    Index-based weighted MS-SSIM loss module.
+    """
+    def __init__(self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, max_num_slices: int = 22):
+        """
+        Args:
+            win_size: Window size for SSIM calculation.
+            k1: k1 parameter for SSIM calculation.
+            k2: k2 parameter for SSIM calculation.
+            max_num_slices: Maximum number of slices.
+        """
+        super(IndexBasedWeightedLoss, self).__init__()
+        self.weight_list = []
+        self.set_weight(max_num_slices)
+        self.ms_ssim = SSIMLoss(win_size=win_size, k1=k1, k2=k2)
+
+    def forward(self, X, Y, data_range, slice_idx):
+        ms_ssim_val = self.ms_ssim(X, Y, data_range)
+        return ms_ssim_val * self.weight_list[slice_idx]
+
+    def set_weight(self, num_slices):
+        for i in range(num_slices):
+            self.weight_list.append(math.cos(i * math.pi / (num_slices * 2)) ** 2)
