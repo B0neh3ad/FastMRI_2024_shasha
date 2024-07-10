@@ -165,4 +165,3 @@ cython_debug/
 wandb
 result/
 requirements.txt
-train_jm.sh
