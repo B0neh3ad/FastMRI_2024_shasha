@@ -62,6 +62,7 @@ def parse():
 
     # wandb
     parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')
+    parser.add_argument('--wandb-run-id', type=str, default=None, help='WandB run ID to resume. If not provided, starts a new run.')
 
     load_dotenv()
     result_dir_path = os.environ['RESULT_DIR_PATH']

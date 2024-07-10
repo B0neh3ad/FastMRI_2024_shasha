@@ -157,11 +157,36 @@ def download_model(url, fname):
             fh.write(chunk)
 
 
+def load_checkpoint(model, optimizer, exp_dir):
+    checkpoint_path = exp_dir / 'model.pt'
+    start_epoch = 0
+    best_val_loss = float('inf')
+
+    if checkpoint_path.is_file():
+        print(f"Loading checkpoint '{checkpoint_path}'")
+        checkpoint = torch.load(checkpoint_path)
+
+        model.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+
+        start_epoch = checkpoint['epoch'] + 1  # Start from the next epoch
+        best_val_loss = checkpoint['best_val_loss']
+
+        print(f"Loaded checkpoint '{checkpoint_path}' (epoch {checkpoint['epoch']})")
+    else:
+        print(f"No checkpoint found at '{checkpoint_path}', starting from scratch.")
+
+    return model, optimizer, start_epoch, best_val_loss
+
+
         
 def train(args):
     if args.wandb_on:
+        resume_option = "must" if args.wandb_run_id else None
         wandb.init(
             project="FastMRI_2024_shasha",
+            id=args.wandb_run_id,
+            resume=resume_option,
             config={
                 "batch_size": args.batch_size,
                 "num_epochs": args.num_epochs,
@@ -201,6 +226,11 @@ def train(args):
 
     best_val_loss = 1.
     start_epoch = 0
+
+    # Load checkpoint only if wandb_run_id is not None
+    if args.wandb_run_id is not None:
+        model, optimizer, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir)
+
     epoch = start_epoch
 
     train_augmentor = DataAugmentor(args, lambda: epoch)
