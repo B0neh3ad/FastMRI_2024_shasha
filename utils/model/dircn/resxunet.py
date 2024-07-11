@@ -1,7 +1,6 @@
 from typing import Union, List, Optional
 
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 
 from .bottleneck import Bottleneck

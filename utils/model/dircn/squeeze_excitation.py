@@ -2,11 +2,8 @@
 Squeeze and Excitation block
 """
 
-from typing import Union, Tuple
-
 import torch
 from torch import nn
-from torch.nn import functional as F
 
 class SqueezeExcitation(nn.Module):
     """
@@ -33,7 +30,7 @@ class SqueezeExcitation(nn.Module):
                                  bias=True)
         # self.swish = MemoryEfficientSwish()
         self.act = nn.ReLU(inplace=True)
-        # Could do this using linear layer aswell, but than we need to .view in forward
+        # Could do this using linear layer as well, but than we need to .view in forward
         # self.linear_1 = nn.Linear(in_features=channels, out_features=squeezed_channels, bias=True)
         # self.linear_2 = nn.Linear(in_features=squeezed_channels, out_features=channels, bias=True)
 
