@@ -4,7 +4,7 @@ import torch
 from collections import defaultdict
 from utils.common.utils import save_reconstructions
 from utils.data.load_data import create_data_loaders
-from utils.model.varnet import VarNet
+from utils.model.varnet.varnet import VarNet
 
 from tqdm import tqdm
 

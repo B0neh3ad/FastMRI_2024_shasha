@@ -10,8 +10,9 @@ import wandb
 from collections import defaultdict
 from utils.data.load_data import create_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss
-from utils.common.loss_function import SSIMLoss
-from utils.model.varnet import VarNet
+from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
+from utils.model.dircn.dircn import DIRCN
+from utils.model.varnet.varnet import VarNet
 
 import os
 
@@ -27,7 +28,6 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     scaler = torch.GradScaler(device='cuda')
 
     for iter, data in enumerate(tqdm(data_loader)):
-        # TODO: slice_idx 활용하여 idx 낮을수록 가중치 높게 loss 함수 수정
         # TODO: slice_idx가 높은 데이터들은 점점 제외하기
         mask, masked_kspace, target, maximum, _, slice_idx = data
         mask = mask.cuda(non_blocking=True)
@@ -38,10 +38,18 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
                 output = model(masked_kspace, mask)
-                loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
+                if type(loss_type) == IndexBasedWeightedLoss:
+                    loss = loss_type(output, target, maximum, slice_idx=slice_idx)
+                else:
+                    loss = loss_type(output, target, maximum)
+                loss /= args.iters_to_grad_acc
         else:
             output = model(masked_kspace, mask)
-            loss = loss_type(output, target, maximum) / args.iters_to_grad_acc
+            if type(loss_type) == IndexBasedWeightedLoss:
+                loss = loss_type(output, target, maximum, slice_idx=slice_idx)
+            else:
+                loss = loss_type(output, target, maximum)
+            loss /= args.iters_to_grad_acc
 
         optimizer.zero_grad()
 
@@ -190,6 +198,7 @@ def train(args):
             config={
                 "batch_size": args.batch_size,
                 "num_epochs": args.num_epochs,
+                "loss_type": args.loss,
                 "learning_rate": args.lr,
                 "net_name": args.net_name,
                 "cascade": args.cascade,
@@ -215,12 +224,28 @@ def train(args):
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
 
-    model = VarNet(num_cascades=args.cascade, 
+    # model
+    if args.net_name == "dircn":
+        model = DIRCN(num_cascades=30, # args.cascade
+                    n=20, # args.chans
+                    sense_n=12 # args.sens_chans
+                )
+    else:
+        model = VarNet(num_cascades=args.cascade,
                    chans=args.chans, 
                    sens_chans=args.sens_chans)
     model.to(device=device)
 
-    loss_type = SSIMLoss().to(device=device)
+    # loss
+    if args.loss == "mixed":
+        loss_type = MixedLoss(alpha=args.alpha).to(device=device)
+    elif args.loss == "focal":
+        loss_type = CustomFocalLoss(gamma=args.gamma).to(device=device)
+    elif args.loss == "index_based":
+        loss_type = IndexBasedWeightedLoss(max_num_slices=args.max_num_slices).to(device=device)
+    else:
+        loss_type = SSIMLoss().to(device=device)
+
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, verbose=True)
 

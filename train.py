@@ -36,6 +36,12 @@ def parse():
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
+    # loss type
+    parser.add_argument('--loss', type=str, default='ssim', help='Loss function')
+    parser.add_argument('--alpha', type=float, default=0.84, help='Alpha value for mixed loss')
+    parser.add_argument('--gamma', type=float, default=2.0, help='Gamma value for custom focal loss')
+    parser.add_argument('--max-num-slices', type=float, default=22, help='Maximum number of slices in all dataset')
+
     # for debug mode
     parser.add_argument('--debug', default=False, help='Set debug mode', action='store_true')
 
