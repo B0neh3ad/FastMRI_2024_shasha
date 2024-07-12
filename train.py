@@ -37,8 +37,8 @@ def parse():
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
     # comb net
-    parser.add_argument('--first_net_name', type=str, default='varnet', help='Name of first net with combination network')
-    parser.add_argument('--second_net_name', type=str, default='nafnet', help='Name of second net with combination network')
+    parser.add_argument('--first-net-name', type=str, default='varnet', help='Name of first net with combination network')
+    parser.add_argument('--second-net-name', type=str, default='nafnet', help='Name of second net with combination network')
 
     # loss type
     parser.add_argument('--loss', type=str, default='ssim', help='Loss function')
