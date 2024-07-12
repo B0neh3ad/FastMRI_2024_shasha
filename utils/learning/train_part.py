@@ -3,7 +3,6 @@ import shutil
 import numpy as np
 import torch
 import time
-import requests
 from tqdm import tqdm
 import wandb
 
@@ -11,6 +10,7 @@ from collections import defaultdict
 from utils.data.load_data import create_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
+from utils.model.comb import CombNet
 from utils.model.dircn.dircn import DIRCN
 from utils.model.varnet.varnet import VarNet
 
@@ -147,24 +147,6 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         print('checkpoint files are not saved since wandb.init() is not called')
 
 
-def download_model(url, fname):
-    response = requests.get(url, timeout=10, stream=True)
-
-    chunk_size = 8 * 1024 * 1024  # 8 MB chunks
-    total_size_in_bytes = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(
-        desc="Downloading state_dict",
-        total=total_size_in_bytes,
-        unit="iB",
-        unit_scale=True,
-    )
-
-    with open(fname, "wb") as fh:
-        for chunk in response.iter_content(chunk_size):
-            progress_bar.update(len(chunk))
-            fh.write(chunk)
-
-
 def load_checkpoint(model, optimizer, exp_dir):
     checkpoint_path = exp_dir / 'model.pt'
     start_epoch = 0
@@ -225,10 +207,12 @@ def train(args):
     print('Current cuda device: ', torch.cuda.current_device())
 
     # model
-    if args.net_name == "dircn":
-        model = DIRCN(num_cascades=30, # args.cascade
-                    n=20, # args.chans
-                    sense_n=12 # args.sens_chans
+    if args.net_name == "comb":
+        model = CombNet(args)
+    elif args.net_name == "dircn":
+        model = DIRCN(num_cascades=args.cascade,
+                    n=args.chans,
+                    sense_n=args.sens_chans
                 )
     else:
         model = VarNet(num_cascades=args.cascade,

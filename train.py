@@ -24,7 +24,7 @@ def parse():
     parser.add_argument('-e', '--num-epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument('-l', '--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('-r', '--report-interval', type=int, default=500, help='Report interval')
-    parser.add_argument('-n', '--net-name', type=Path, default='test_varnet', help='Name of network')
+    parser.add_argument('-n', '--net-name', type=Path, default='test_varnet', help='Name of network. If the value is "comb", you can use the combination of two network.')
     parser.add_argument('-t', '--data-path-train', type=Path, default='/Data/train/', help='Directory of train data')
     parser.add_argument('-v', '--data-path-val', type=Path, default='/Data/val/', help='Directory of validation data')
     
@@ -35,6 +35,10 @@ def parse():
     parser.add_argument('--target-key', type=str, default='image_label', help='Name of target key')
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
+
+    # comb net
+    parser.add_argument('--first_net_name', type=str, default='varnet', help='Name of first net with combination network')
+    parser.add_argument('--second_net_name', type=str, default='nafnet', help='Name of second net with combination network')
 
     # loss type
     parser.add_argument('--loss', type=str, default='ssim', help='Loss function')
