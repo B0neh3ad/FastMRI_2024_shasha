@@ -448,7 +448,7 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_weight_brightness',
             type=float,
-            default=1.0,
+            default=0.0,
             help='Weight of probability of luminance variation. Augmentation probability will be multiplied to this constant'
         )
         parser.add_argument(
@@ -476,7 +476,7 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_max_rotation', 
             type=float, 
-            default=180., 
+            default=10.,
             help='Maximum rotation applied in either clockwise or counter-clockwise direction in degrees.'
         )
         parser.add_argument(
@@ -500,7 +500,7 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_min_scalex',
             type=float,
-            default=1.0,
+            default=0.9,
             help='Minimum horizontal scaling applied as fraction of image dimensions.'
         )
         parser.add_argument(
