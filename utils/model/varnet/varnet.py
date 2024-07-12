@@ -244,7 +244,6 @@ class VarNet(nn.Module):
         height = result.shape[-2]
         width = result.shape[-1]
 
-        # TODO: add gaussian noise
         return result[..., (height - 384) // 2 : 384 + (height - 384) // 2, (width - 384) // 2 : 384 + (width - 384) // 2]
 
 
