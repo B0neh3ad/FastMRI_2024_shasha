@@ -1,4 +1,5 @@
 import math
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -171,6 +172,8 @@ class KBNet_s(nn.Module):
     def forward(self, inp):
         B, C, H, W = inp.shape
         inp = self.check_image_size(inp)
+        inp, mean, std = self.norm(inp)
+
         x = self.intro(inp)
 
         encs = []
@@ -189,8 +192,9 @@ class KBNet_s(nn.Module):
 
         x = self.ending(x)
         x = x + inp
+        x = self.unnorm(x, mean, std)
 
-        return x[:, :, :H, :W]
+        return x[:, :, :H, :W].mean(dim=1)
 
     def check_image_size(self, x):
         _, _, h, w = x.size()
@@ -198,3 +202,20 @@ class KBNet_s(nn.Module):
         mod_pad_w = (self.padder_size - w % self.padder_size) % self.padder_size
         x = F.pad(x, (0, mod_pad_w, 0, mod_pad_h))
         return x
+
+    def norm(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        # group norm
+        b, c, h, w = x.shape
+        x = x.view(b, c, h * w)
+
+        mean = x.mean(dim=2).view(b, c, 1, 1)
+        std = x.std(dim=2).view(b, c, 1, 1)
+
+        x = x.view(b, c, h, w)
+
+        return (x - mean) / std, mean, std
+
+    def unnorm(
+        self, x: torch.Tensor, mean: torch.Tensor, std: torch.Tensor
+    ) -> torch.Tensor:
+        return x * std + mean

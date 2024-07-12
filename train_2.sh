@@ -4,19 +4,17 @@ if [ -f .env ]; then
   export $(cat .env | grep -v '^#' | xargs)
 fi
 
-python3.8 train.py \
-  -b 1 \
-  -e 50 \
+python3.8 train_2.py \
+  -b 4 \
+  -e 10 \
   -l 0.001 \
+  -n "nafnet" \
   -r 10 \
-  -n 'comb' \
   -t "$DATA_DIR_PATH/train/" \
   -v "$DATA_DIR_PATH/val/" \
-  --debug \
+  --prev-net-name "test_Varnet" \
   --cascade 6 \
   --chans 15 \
-  --sens_chans 4 \
-  --aug_on \
-  --mask_aug_on \
-  --aug_strength 0.5
+  --sens_chans 4
 
+# 주의: augmentation 아직 안 만들어 둠!

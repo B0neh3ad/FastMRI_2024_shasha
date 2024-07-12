@@ -1,5 +1,8 @@
 import numpy as np
 import torch
+from fastmri.data import transforms as T
+from fastmri import ifft2c, rss_complex
+from pygrappa import grappa
 
 def to_tensor(data):
     """
@@ -12,7 +15,7 @@ def to_tensor(data):
     """
     return torch.from_numpy(data)
 
-class DataTransform:
+class KspaceDataTransform:
     def __init__(self, isforward, max_key, augmentor = None, mask_augmentor = None):
         self.isforward = isforward
         self.max_key = max_key
@@ -57,7 +60,7 @@ class DataTransform:
         kspace = to_tensor(kspace)
         mask = to_tensor(mask)
 
-        kspace = torch.stack((kspace.real, kspace.imag), dim=-1)
+        kspace = self._complex_to_float(kspace)
         mask = mask.reshape(1, 1, kspace.shape[-2], 1).float().byte()
 
         # Apply augmentations if needed
@@ -71,3 +74,47 @@ class DataTransform:
 
         masked_kspace = kspace * mask
         return mask, masked_kspace, target, maximum, fname, slice
+
+    @staticmethod
+    def _complex_to_float(complex_tensor):
+        return torch.stack((complex_tensor.real, complex_tensor.imag), dim=-1)
+
+
+class ImageDataTransform:
+    def __init__(self, isforward, max_key, augmentor = None):
+        self.isforward = isforward
+        self.max_key = max_key
+
+        if augmentor is not None:
+            self.use_augment = True
+            self.augmentor = augmentor
+        else:
+            self.use_augment = False
+
+    def __call__(self, image, target, attrs, fname, slice):
+        """
+        Args:
+            image: input image with shape [3, H, W]
+            target: Target image.
+            attrs: Acquisition related information stored in the HDF5 object.
+            fname: File name.
+            slice: The slice index.
+        Returns:
+            image: input image with shape [3, H, W]
+            target: The target image (if applicable).
+            maximum: Maximum image value.
+            fname: File name.
+            slice: The slice index.
+        """
+        if not self.isforward:
+            target = to_tensor(target)
+            maximum = attrs[self.max_key]
+        else:
+            target = -1
+            maximum = -1
+
+        image = to_tensor(image)
+
+        # TODO: 나중에 짬나면 augmentation 적용하는 코드 작성하기
+
+        return image, target, maximum, fname, slice

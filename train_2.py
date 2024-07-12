@@ -9,33 +9,37 @@ from utils.mraugment.data_augment import DataAugmentor
 
 if os.getcwd() + '/utils/model/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/model/')
-from utils.learning.train_part import train
+from utils.learning.train_part_2 import train
 
 if os.getcwd() + '/utils/common/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/common/')
 from utils.common.utils import seed_fix
 
-
 def parse():
-    parser = argparse.ArgumentParser(description='Train Varnet/DIRCN on FastMRI challenge Images',
-                                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Train NAFNet/KBNet on FastMRI challenge Images',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-g', '--GPU-NUM', type=int, default=0, help='GPU number to allocate')
     parser.add_argument('-b', '--batch-size', type=int, default=1, help='Batch size')
     parser.add_argument('-e', '--num-epochs', type=int, default=1, help='Number of epochs')
     parser.add_argument('-l', '--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('-r', '--report-interval', type=int, default=500, help='Report interval')
-    parser.add_argument('-n', '--net-name', type=Path, default='test_varnet', help='Name of network')
+    parser.add_argument('-n', '--net-name', type=Path, default='nafnet', help='Name of network.')
     parser.add_argument('-t', '--data-path-train', type=Path, default='/Data/train/', help='Directory of train data')
     parser.add_argument('-v', '--data-path-val', type=Path, default='/Data/val/', help='Directory of validation data')
-    
-    parser.add_argument('--cascade', type=int, default=1, help='Number of cascades | Should be less than 12') ## important hyperparameter
-    parser.add_argument('--chans', type=int, default=9, help='Number of channels for cascade U-Net | 18 in original varnet') ## important hyperparameter
-    parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net | 8 in original varnet') ## important hyperparameter
 
-    parser.add_argument('--input-key', type=str, default='kspace', help='Name of kspace input key')
+    parser.add_argument('--input-key', type=str, default='image_input', help='Name of image input key')
+    parser.add_argument('--recon-key', type=str, default='reconstruction', help='Name of reconstruction key')
+    parser.add_argument('--grappa-key', type=str, default='image_grappa', help='Name of image grappa key')
     parser.add_argument('--target-key', type=str, default='image_label', help='Name of target key')
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
+
+    parser.add_argument('--prev-net-name', type=Path, default='test_Varnet', help='Name of previous network. (This should be the same as the dir name for prev network)')
+
+    # previous net info for reconstruction (for experiment)
+    parser.add_argument('--cascade', type=int, default=1, help='Number of cascades | Should be less than 12')
+    parser.add_argument('--chans', type=int, default=9, help='Number of channels for cascade U-Net | 18 in original varnet')
+    parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net | 8 in original varnet')
 
     # loss type
     parser.add_argument('--loss', type=str, default='ssim', help='Loss function')
@@ -56,20 +60,15 @@ def parse():
     # for gradient accumultation
     parser.add_argument('--iters-to-grad-acc', type=int, default=1, help='Iterations to gradient accumulation')
 
-    # data augmentation config
-    parser = DataAugmentor.add_augmentation_specific_args(parser)
-
-    # mask augmentation config
-    parser.add_argument('--mask_aug_on', default=False, help='This switch turns mask augmentation on.', action='store_true')
-    parser.add_argument('--aug_weight_mask', type=float, default=1.0, help='Weight of mask augmentation probability. Augmentation probability will be multiplied by this constant')
-
     # scheduler
-    parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.', action='store_true')
+    parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.',
+                        action='store_true')
     parser.add_argument('--patience', type=int, default=2, help='Patience for reduce learning rate')
 
     # wandb
     parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')
-    parser.add_argument('--wandb-run-id', type=str, default=None, help='WandB run ID to resume. If not provided, starts a new run.')
+    parser.add_argument('--wandb-run-id', type=str, default=None,
+                        help='WandB run ID to resume. If not provided, starts a new run.')
 
     load_dotenv()
     result_dir_path = os.environ['RESULT_DIR_PATH']
@@ -83,19 +82,20 @@ def parse():
 
 if __name__ == '__main__':
     args = parse()
-    
+
     # fix seed
     if args.seed is not None:
         seed_fix(args.seed)
 
     args.exp_dir = args.result_dir_path / args.net_name / 'checkpoints'
-    args.train_dir = args.result_dir_path / args.net_name / 'reconstructions_train'
     args.val_dir = args.result_dir_path / args.net_name / 'reconstructions_val'
     args.main_dir = args.result_dir_path / args.net_name / __file__
     args.val_loss_dir = args.result_dir_path / args.net_name
 
+    args.recon_path_train = args.result_dir_path / args.prev_net_name / 'reconstructions_train'
+    args.recon_path_val = args.result_dir_path / args.prev_net_name / 'reconstructions_val'
+
     args.exp_dir.mkdir(parents=True, exist_ok=True)
-    args.train_dir.mkdir(parents=True, exist_ok=True)
     args.val_dir.mkdir(parents=True, exist_ok=True)
 
     train(args)

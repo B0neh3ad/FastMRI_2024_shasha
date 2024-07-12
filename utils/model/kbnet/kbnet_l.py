@@ -1,4 +1,5 @@
 import math
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -166,7 +167,7 @@ class KBBlock_l(nn.Module):
 
 
 class KBNet_l(nn.Module):
-    def __init__(self, inp_channels=3, out_channels=3, dim=48, num_blocks=[4, 6, 6, 8], num_refinement_blocks=4,
+    def __init__(self, inp_channels=3, out_channels=1, dim=48, num_blocks=[4, 6, 6, 8], num_refinement_blocks=4,
                  heads=[1, 2, 4, 8], ffn_expansion_factor=1.5, bias=False,
                  blockname='KBBlock_l'):
         super(KBNet_l, self).__init__()
@@ -219,6 +220,7 @@ class KBNet_l(nn.Module):
         self.output = nn.Conv2d(int(dim * 2 ** 1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
 
     def forward(self, inp_img):
+        inp_img, mean, std = self.norm(inp_img)
         inp_enc_level1 = self.patch_embed(inp_img)
         out_enc_level1 = self.encoder_level1(inp_enc_level1)
 
@@ -248,5 +250,23 @@ class KBNet_l(nn.Module):
         out_dec_level1 = self.refinement(out_dec_level1)
 
         out_dec_level1 = self.output(out_dec_level1) + inp_img
+        out_dec_level1 = self.unnorm(out_dec_level1, mean, std)
 
         return out_dec_level1
+
+    def norm(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        # group norm
+        b, c, h, w = x.shape
+        x = x.view(b, c, h * w)
+
+        mean = x.mean(dim=2).view(b, c, 1, 1)
+        std = x.std(dim=2).view(b, c, 1, 1)
+
+        x = x.view(b, c, h, w)
+
+        return (x - mean) / std, mean, std
+
+    def unnorm(
+        self, x: torch.Tensor, mean: torch.Tensor, std: torch.Tensor
+    ) -> torch.Tensor:
+        return x * std + mean

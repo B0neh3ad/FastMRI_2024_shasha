@@ -1,5 +1,7 @@
 import glob
+import copy
 import shutil
+
 import numpy as np
 import torch
 import time
@@ -7,17 +9,18 @@ from tqdm import tqdm
 import wandb
 
 from collections import defaultdict
-from utils.data.load_data import create_kspace_data_loaders
+from utils.data.load_data import create_kspace_data_loaders, create_image_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
 from utils.model.dircn.dircn import DIRCN
+from utils.model.kbnet.kbnet_l import KBNet_l
+from utils.model.kbnet.kbnet_s import KBNet_s
+from utils.model.nafnet.nafnet import NAFNet
 from utils.model.varnet.varnet import VarNet
 
+from utils.learning.test_part import test
+
 import os
-
-from utils.mraugment.data_augment import DataAugmentor
-from utils.mraugment.mask_augment import MaskAugmentor
-
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()
     start_epoch = start_iter = time.perf_counter()
@@ -28,22 +31,21 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
 
     for iter, data in enumerate(tqdm(data_loader)):
         # TODO: slice_idx가 높은 데이터들은 점점 제외하기
-        mask, masked_kspace, target, maximum, _, slice_idx = data
-        mask = mask.cuda(non_blocking=True)
-        masked_kspace = masked_kspace.cuda(non_blocking=True) # undersampled kspace converted in DataTransform object
+        image, target, maximum, _, slice_idx = data
+        image = image.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
 
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
-                output = model(masked_kspace, mask)
+                output = model(image)
                 if type(loss_type) == IndexBasedWeightedLoss:
                     loss = loss_type(output, target, maximum, slice_idx=slice_idx)
                 else:
                     loss = loss_type(output, target, maximum)
                 loss /= args.iters_to_grad_acc
         else:
-            output = model(masked_kspace, mask)
+            output = model(image)
             if type(loss_type) == IndexBasedWeightedLoss:
                 loss = loss_type(output, target, maximum, slice_idx=slice_idx)
             else:
@@ -68,7 +70,8 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
                 scaler.update()
             else:
                 optimizer.step()
-            total_loss += loss.item() * (args.iters_to_grad_acc if iter < len_loader - 1 else len_loader % args.iters_to_grad_acc)
+            total_loss += loss.item() * (
+                args.iters_to_grad_acc if iter < len_loader - 1 else len_loader % args.iters_to_grad_acc)
 
         if (iter + 1) % args.report_interval == 0:
             tqdm.write(
@@ -88,7 +91,6 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     total_loss = total_loss / len_loader
     return total_loss, time.perf_counter() - start_epoch
 
-
 def validate(args, model, data_loader):
     model.eval()
     reconstructions = defaultdict(dict)
@@ -97,10 +99,9 @@ def validate(args, model, data_loader):
 
     with torch.no_grad():
         for iter, data in enumerate(tqdm(data_loader)):
-            mask, kspace, target, _, fnames, slices = data
-            kspace = kspace.cuda(non_blocking=True)
-            mask = mask.cuda(non_blocking=True)
-            output = model(kspace, mask)
+            image, target, _, fnames, slices = data
+            image = image.cuda(non_blocking=True)
+            output = model(image)
 
             for i in range(output.shape[0]):
                 reconstructions[fnames[i]][int(slices[i])] = output[i].cpu().numpy()
@@ -167,8 +168,41 @@ def load_checkpoint(model, optimizer, exp_dir):
 
     return model, optimizer, start_epoch, best_val_loss
 
+def reconstruct_with_prev_net(args, device):
+    prev_exp_dir = args.result_dir_path / args.prev_net_name / 'checkpoints'
 
-        
+    if args.prev_net_name == 'dircn':
+        model = DIRCN(num_cascades=args.cascade,
+                               n=args.chans,
+                               sense_n=args.sens_chans)
+    else:
+        model = VarNet(num_cascades=args.cascade,
+                                chans=args.chans,
+                                sens_chans=args.sens_chans)
+    model.to(device = device)
+
+    checkpoint = torch.load(prev_exp_dir / 'best_model.pt', map_location='cpu')
+    print("checkpoint's epoch:", checkpoint['epoch'], "/ best validation loss:", checkpoint['best_val_loss'].item())
+    model.load_state_dict(checkpoint['model'])
+
+    tmp_args = copy.deepcopy(args)
+    tmp_args.input_key = 'kspace'
+    tmp_args.batch_size = 1
+
+    # train
+    if input('Do you want to reconstruct train data? [Y/n]') == 'Y':
+        print("Reconstruct train data")
+        train_data_loader = create_kspace_data_loaders(data_path=args.data_path_train, args=tmp_args, isforward=True)
+        reconstructions, _ = test(tmp_args, model, train_data_loader)
+        save_reconstructions(reconstructions, tmp_args.recon_path_train)
+
+    # val
+    if input('Do you want to reconstruct val data? [Y/n]') == 'Y':
+        print("Reconstruct validation data")
+        val_data_loader = create_kspace_data_loaders(data_path=args.data_path_val, args=tmp_args, isforward=True)
+        reconstructions, _ = test(tmp_args, model, val_data_loader)
+        save_reconstructions(reconstructions, tmp_args.recon_path_val)
+
 def train(args):
     if args.wandb_on:
         resume_option = "must" if args.wandb_run_id else None
@@ -182,9 +216,7 @@ def train(args):
                 "loss_type": args.loss,
                 "learning_rate": args.lr,
                 "net_name": args.net_name,
-                "cascade": args.cascade,
-                "chans": args.chans,
-                "sens_chans": args.sens_chans,
+                "prev_net_name": args.prev_net_name,
                 "grad_clip_on": args.grad_clip_on,
                 "grad_clip": args.grad_clip,
                 "iters_to_grad_acc": args.iters_to_grad_acc,
@@ -205,15 +237,16 @@ def train(args):
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
 
-    # first model (kspace-to-image)
-    if args.net_name == 'dircn':
-        model = DIRCN(num_cascades=args.cascade,
-                               n=args.chans,
-                               sense_n=args.sens_chans)
+    # create reconstructions from previous network
+    reconstruct_with_prev_net(args, device)
+
+    # second model (image-to-image)
+    if args.net_name == 'kbnet_s':
+        model = KBNet_s()
+    elif args.net_name == 'kbnet_l':
+        model = KBNet_l()
     else:
-        model = VarNet(num_cascades=args.cascade,
-                                chans=args.chans,
-                                sens_chans=args.sens_chans)
+        model = NAFNet()
     model.to(device=device)
 
     # loss
@@ -238,20 +271,11 @@ def train(args):
 
     epoch = start_epoch
 
-    train_augmentor = DataAugmentor(args, lambda: epoch)
-    val_augmentor = DataAugmentor(args, lambda: epoch, is_validation=True)
-    mask_augmentor = MaskAugmentor(args, lambda: epoch,
-                                   center_fractions=[0.08, 0.083],
-                                   accelerations=[6, 7, 9],
-                                   allow_any_combination=True)
-
-    train_loader = create_kspace_data_loaders(data_path = args.data_path_train, args = args, shuffle=True,
-                                              augmentor=train_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None,
+    train_loader = create_image_data_loaders(data_path=args.data_path_train, recon_path=args.recon_path_train, args=args, shuffle=True,
                                               current_epoch_fn=lambda: epoch)
-    val_loader = create_kspace_data_loaders(data_path = args.data_path_val, args = args,
-                                            augmentor=val_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None,
+    val_loader = create_image_data_loaders(data_path=args.data_path_val, recon_path=args.recon_path_val, args=args,
                                             current_epoch_fn=lambda: epoch)
-    
+
     val_loss_log = np.empty((0, 2))
 
     if args.wandb_on:
@@ -260,7 +284,7 @@ def train(args):
 
     for epoch in range(start_epoch, args.num_epochs):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
-        
+
         train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
 
         val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)

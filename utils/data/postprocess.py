@@ -1,4 +1,3 @@
-# TODO: dithering 구현하기~~
 from pathlib import Path
 from dotenv import load_dotenv
 import h5py
