@@ -220,9 +220,6 @@ def train(args):
                 "grad_clip_on": args.grad_clip_on,
                 "grad_clip": args.grad_clip,
                 "iters_to_grad_acc": args.iters_to_grad_acc,
-                "aug_on": args.aug_on,
-                "aug_strength": args.aug_strength,
-                "mask_aug_on": args.mask_aug_on,
                 "lr_scheduler_on": args.lr_scheduler_on,
                 "patience": args.patience
             }
