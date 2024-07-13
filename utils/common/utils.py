@@ -11,8 +11,10 @@ from skimage.metrics import structural_similarity
 import h5py
 import numpy as np
 import torch
+import torch.nn.functional as F
 import random
 from matplotlib import pyplot as plt
+import cv2
 
 def save_reconstructions(reconstructions, out_dir, targets=None, inputs=None):
     """
@@ -100,3 +102,20 @@ def show_image_slices(img_path, slice_idxs=[0], cmap='gray'):
             img_slice = hf[key][slice_idx]
             plt.title(key)
             ax.imshow(img_slice, cmap=cmap)
+
+def get_mask(target):
+    mask = (target > 5e-5).float()
+    kernel = torch.ones((1, 1, 3, 3), dtype=torch.float32, device=target.device)
+    mask = mask.unsqueeze(1)
+    for _ in range(1):
+        mask = F.conv2d(mask, kernel, padding=1)
+        mask = (mask == kernel.sum()).float()
+    for _ in range(15):
+        mask = F.conv2d(mask, kernel, padding=1)
+        mask = (mask > 0).float()
+    for _ in range(14):
+        mask = F.conv2d(mask, kernel, padding=1)
+        mask = (mask == kernel.sum()).float()
+    mask = mask.squeeze(1)
+
+    return mask

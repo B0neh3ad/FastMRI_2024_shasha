@@ -10,7 +10,7 @@ import wandb
 
 from collections import defaultdict
 from utils.data.load_data import create_kspace_data_loaders, create_image_data_loaders
-from utils.common.utils import save_reconstructions, ssim_loss
+from utils.common.utils import save_reconstructions, ssim_loss, get_mask
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
 from utils.model.dircn.dircn import DIRCN
 from utils.model.kbnet.kbnet_l import KBNet_l
@@ -35,21 +35,22 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         image = image.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
+        image_mask = get_mask(target)
 
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
                 output = model(image)
                 if type(loss_type) == IndexBasedWeightedLoss:
-                    loss = loss_type(output, target, maximum, slice_idx=slice_idx)
+                    loss = loss_type(output * image_mask, target * image_mask, maximum, slice_idx=slice_idx)
                 else:
-                    loss = loss_type(output, target, maximum)
+                    loss = loss_type(output * image_mask, target * image_mask, maximum)
                 loss /= args.iters_to_grad_acc
         else:
             output = model(image)
             if type(loss_type) == IndexBasedWeightedLoss:
-                loss = loss_type(output, target, maximum, slice_idx=slice_idx)
+                loss = loss_type(output * image_mask, target * image_mask, maximum, slice_idx=slice_idx)
             else:
-                loss = loss_type(output, target, maximum)
+                loss = loss_type(output * image_mask, target * image_mask, maximum)
             loss /= args.iters_to_grad_acc
 
         optimizer.zero_grad()
@@ -101,11 +102,13 @@ def validate(args, model, data_loader):
         for iter, data in enumerate(tqdm(data_loader)):
             image, target, _, fnames, slices = data
             image = image.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
+            image_mask = get_mask(target)
             output = model(image)
 
             for i in range(output.shape[0]):
-                reconstructions[fnames[i]][int(slices[i])] = output[i].cpu().numpy()
-                targets[fnames[i]][int(slices[i])] = target[i].numpy()
+                reconstructions[fnames[i]][int(slices[i])] = (output[i] * image_mask[i]).cpu().numpy()
+                targets[fnames[i]][int(slices[i])] = (target[i] * image_mask[i]).cpu().numpy()
 
             if args.debug:
                 break
@@ -256,7 +259,7 @@ def train(args):
     else:
         loss_type = SSIMLoss().to(device=device)
 
-    optimizer = torch.optim.Adam(model.parameters(), args.lr)
+    optimizer = torch.optim.RAdam(model.parameters(), args.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, verbose=True)
 
     best_val_loss = 1.

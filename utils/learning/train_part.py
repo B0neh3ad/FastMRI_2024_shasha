@@ -8,7 +8,7 @@ import wandb
 
 from collections import defaultdict
 from utils.data.load_data import create_kspace_data_loaders
-from utils.common.utils import save_reconstructions, ssim_loss
+from utils.common.utils import save_reconstructions, ssim_loss, get_mask
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
 from utils.model.dircn.dircn import DIRCN
 from utils.model.varnet.varnet import VarNet
@@ -33,21 +33,22 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         masked_kspace = masked_kspace.cuda(non_blocking=True) # undersampled kspace converted in DataTransform object
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
+        image_mask = get_mask(target)
 
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
                 output = model(masked_kspace, mask)
                 if type(loss_type) == IndexBasedWeightedLoss:
-                    loss = loss_type(output, target, maximum, slice_idx=slice_idx)
+                    loss = loss_type(output * image_mask, target * image_mask, maximum, slice_idx=slice_idx)
                 else:
-                    loss = loss_type(output, target, maximum)
+                    loss = loss_type(output * image_mask, target * image_mask, maximum)
                 loss /= args.iters_to_grad_acc
         else:
             output = model(masked_kspace, mask)
             if type(loss_type) == IndexBasedWeightedLoss:
-                loss = loss_type(output, target, maximum, slice_idx=slice_idx)
+                loss = loss_type(output * image_mask, target * image_mask, maximum, slice_idx=slice_idx)
             else:
-                loss = loss_type(output, target, maximum)
+                loss = loss_type(output * image_mask, target * image_mask, maximum)
             loss /= args.iters_to_grad_acc
 
         optimizer.zero_grad()
@@ -100,11 +101,13 @@ def validate(args, model, data_loader):
             mask, kspace, target, _, fnames, slices = data
             kspace = kspace.cuda(non_blocking=True)
             mask = mask.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
+            image_mask = get_mask(target)
             output = model(kspace, mask)
 
             for i in range(output.shape[0]):
-                reconstructions[fnames[i]][int(slices[i])] = output[i].cpu().numpy()
-                targets[fnames[i]][int(slices[i])] = target[i].numpy()
+                reconstructions[fnames[i]][int(slices[i])] = (output[i] * image_mask[i]).cpu().numpy()
+                targets[fnames[i]][int(slices[i])] = (target[i] * image_mask[i]).cpu().numpy()
 
             if args.debug:
                 break
