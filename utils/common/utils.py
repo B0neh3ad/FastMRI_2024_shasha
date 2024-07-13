@@ -38,13 +38,6 @@ def save_reconstructions(reconstructions, out_dir, targets=None, inputs=None):
                 f.create_dataset('input', data=inputs[fname])
 
     result_dir_path = os.environ['RESULT_DIR_PATH']
-    # save reconstructions
-    try:
-        h5_files = glob.glob(os.path.join(result_dir_path, "**", "*.h5"), recursive=True)
-        for file in h5_files:
-            wandb.save(file)
-    except wandb.errors.Error as e:
-        print('reconstruction files are not saved since wandb.init() is not called')
 
 def ssim_loss(gt, pred, maxval=None):
     """Compute Structural Similarity Index Metric (SSIM)
