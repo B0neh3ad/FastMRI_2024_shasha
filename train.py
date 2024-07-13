@@ -81,9 +81,9 @@ def parse():
     args = parser.parse_args()
     return args
 
-if __name__ == '__main__':
+def start_train():
     args = parse()
-    
+
     # fix seed
     if args.seed is not None:
         seed_fix(args.seed)
@@ -99,3 +99,6 @@ if __name__ == '__main__':
     args.val_dir.mkdir(parents=True, exist_ok=True)
 
     train(args)
+
+if __name__ == '__main__':
+    start_train()

@@ -1,6 +1,7 @@
 import torch
 import argparse
 import shutil
+import yaml
 import os, sys
 from pathlib import Path
 from dotenv import load_dotenv
@@ -14,6 +15,11 @@ from utils.learning.train_part_2 import train
 if os.getcwd() + '/utils/common/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/common/')
 from utils.common.utils import seed_fix
+
+def load_yaml(path):
+    with open(path) as f:
+        config = yaml.safe_load(f)
+    return config
 
 def parse():
     parser = argparse.ArgumentParser(description='Train NAFNet/KBNet on FastMRI challenge Images',
@@ -40,6 +46,10 @@ def parse():
     parser.add_argument('--cascade', type=int, default=1, help='Number of cascades | Should be less than 12')
     parser.add_argument('--chans', type=int, default=9, help='Number of channels for cascade U-Net | 18 in original varnet')
     parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net | 8 in original varnet')
+
+    parser.add_argument('--recon-train', default=False, help='Reconstruct train image with previous model', action='store_true')
+    parser.add_argument('--recon-val', default=False, help='Reconstruct validation image with previous model',
+                        action='store_true')
 
     # loss type
     parser.add_argument('--loss', type=str, default='ssim', help='Loss function')
@@ -83,9 +93,15 @@ def parse():
     parser.add_argument('--data-dir-path', type=str, default=data_dir_path, help='Path to data directory')
 
     args = parser.parse_args()
+
+    # wandb sweep args parsing
+    sweep_args = load_yaml('train_2_sweep.yaml')
+    for key in sweep_args:
+        if key in args:
+            args[key] = sweep_args[key]
     return args
 
-if __name__ == '__main__':
+def start_train():
     args = parse()
 
     # fix seed
@@ -104,3 +120,6 @@ if __name__ == '__main__':
     args.val_dir.mkdir(parents=True, exist_ok=True)
 
     train(args)
+
+if __name__ == '__main__':
+    start_train()
