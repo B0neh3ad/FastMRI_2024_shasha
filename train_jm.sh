@@ -29,6 +29,8 @@ python3.8 train.py \
   --aug_max_translation_y 0.1 \
   --aug_max_rotation 10.0 \
   --aug_max_scaling 0.2 \
+  --wandb-on \
+  --wandb-run-id 5nkb81ny 
 
 
 

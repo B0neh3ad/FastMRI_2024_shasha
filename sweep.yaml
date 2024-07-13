@@ -14,6 +14,10 @@ parameters:
     values: [10]
   net-name:
     values: ['test_Varnet']
+  data-path-train:
+    value: "${envvar:DATA_DIR_PATH}/train/"
+  data-path-val:
+    value: "${envvar:RESULT_DIR_PATH}'/val/"
   aug_on:
     values: [true]
   mask_aug_on:
@@ -47,29 +51,7 @@ parameters:
   aug_min_scalex:
     values: [0.8]
 command:
-  - ${env}
-  - python3.8 train.py
-  - -b ${batch-size}
-  - -e ${num-epochs}
-  - -l ${lr}
-  - -r ${report-interval}
-  - -n ${net-name}
-  - -t "${DATA_DIR_PATH}/train/"
-  - -v "${DATA_DIR_PATH}/val/"
-  - --aug_on=${aug_on}
-  - --mask_aug_on=${mask_aug_on}
-  - --aug_strength=${aug_strength}
-  - --cascade=${cascade}
-  - --chans=${chans}
-  - --sens_chans=${sens_chans}
-  - --aug_weight_translation=${aug_weight_translation}
-  - --aug_weight_rotation=${aug_weight_rotation}
-  - --aug_weight_shearing=${aug_weight_shearing}
-  - --aug_weight_scaling=${aug_weight_scaling}
-  - --aug_weight_flipv=${aug_weight_flipv}
-  - --aug_weight_brightness=${aug_weight_brightness}
-  - --aug_weight_contrast=${aug_weight_contrast}
-  - --aug_max_rotation=${aug_max_rotation}
-  - --aug_max_scaling=${aug_max_scaling}
-  - --aug_min_scalex=${aug_min_scalex}
-  - wandb-on
+  - runner.sh
+  - python3.8
+  - ${program}
+  - ${args}
