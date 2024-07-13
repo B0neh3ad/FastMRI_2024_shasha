@@ -47,6 +47,13 @@ def parse():
     parser.add_argument('--gamma', type=float, default=2.0, help='Gamma value for custom focal loss')
     parser.add_argument('--max-num-slices', type=float, default=22, help='Maximum number of slices in all dataset')
 
+    # optimizer
+    parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer')
+
+    # scheduler
+    parser.add_argument('--lr-scheduler', type=str, default='plateau', help='Scheduler')
+    parser.add_argument('--t-max', type=int, default=10, help='Period of learning rate when using cosine annealing')
+
     # for debug mode
     parser.add_argument('--debug', default=False, help='Set debug mode', action='store_true')
 

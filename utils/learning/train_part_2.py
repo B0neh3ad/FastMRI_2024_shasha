@@ -223,7 +223,9 @@ def train(args):
                 "grad_clip_on": args.grad_clip_on,
                 "grad_clip": args.grad_clip,
                 "iters_to_grad_acc": args.iters_to_grad_acc,
+                "optimizer": args.optimizer,
                 "lr_scheduler_on": args.lr_scheduler_on,
+                "lr_scheduler": args.lr_scheduler,
                 "patience": args.patience
             }
         )
@@ -259,8 +261,17 @@ def train(args):
     else:
         loss_type = SSIMLoss().to(device=device)
 
-    optimizer = torch.optim.RAdam(model.parameters(), args.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, verbose=True)
+    if args.optimizer == "adamw":
+        optimizer = torch.optim.AdamW(model.parameters(), args.lr)
+    elif args.optimizer == "radam":
+        optimizer = torch.optim.RAdam(model.parameters(), args.lr)
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), args.lr)
+
+    if args.lr_scheduler == "cosine":
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.t_max, verbose=True)
+    else:
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, verbose=True)
 
     best_val_loss = 1.
     start_epoch = 0
