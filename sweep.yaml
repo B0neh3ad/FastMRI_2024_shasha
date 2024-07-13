@@ -1,5 +1,5 @@
 program: train.py
-method: random
+method: bayes
 metric:
   name: val_loss
   goal: minimize
@@ -7,13 +7,13 @@ parameters:
   batch-size:
     values: [1]
   num-epochs:
-    values: [20]
+    values: [12]
   lr:
-    values: [0.004, 0.001, 0.0025]
+    values: [0.01, 0.001, 0.0001]
   report-interval:
     values: [10]
   net-name:
-    values: ['test_Varnet', 'dircn']
+    values: ['test_Varnet']
   aug_on:
     values: [true]
   mask_aug_on:
@@ -21,11 +21,11 @@ parameters:
   aug_strength:
     values: [0.4, 0.6, 0.8, 1.0]
   cascade:
-    values: [6]
+    values: [4,6,8]
   chans:
-    values: [15]
+    values: [10,15]
   sens_chans:
-    values: [4]
+    values: [2,4]
   aug_weight_translation:
     values: [1.0, 0.0]
   aug_weight_rotation:
