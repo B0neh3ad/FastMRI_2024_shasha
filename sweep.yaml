@@ -1,0 +1,75 @@
+program: train.py
+method: random
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+  batch-size:
+    values: [1]
+  num-epochs:
+    values: [20]
+  lr:
+    values: [0.004, 0.001, 0.0025]
+  report-interval:
+    values: [10]
+  net-name:
+    values: ['test_Varnet', 'dircn']
+  aug_on:
+    values: [true]
+  mask_aug_on:
+    values: [true]
+  aug_strength:
+    values: [0.4, 0.6, 0.8, 1.0]
+  cascade:
+    values: [6]
+  chans:
+    values: [15]
+  sens_chans:
+    values: [4]
+  aug_weight_translation:
+    values: [1.0, 0.0]
+  aug_weight_rotation:
+    values: [1.0, 0.0]
+  aug_weight_shearing:
+    values: [0.0]
+  aug_weight_scaling:
+    values: [1.0, 0.0]
+  aug_weight_flipv:
+    values: [0.0]
+  aug_weight_brightness:
+    values: [1.0, 0.0]
+  aug_weight_contrast:
+    values: [1.0, 0.0]
+  aug_max_rotation:
+    values: [10.0]
+  aug_max_scaling:
+    values: [0.2]
+  aug_min_scalex:
+    values: [0.8]
+command:
+  - ${env}
+  - python3.8 train.py
+  - -b ${batch-size}
+  - -e ${num-epochs}
+  - -l ${lr}
+  - -r ${report-interval}
+  - -n ${net-name}
+  - -t "${DATA_DIR_PATH}/train/"
+  - -v "${DATA_DIR_PATH}/val/"
+  - --aug_on=${aug_on}
+  - --mask_aug_on=${mask_aug_on}
+  - --aug_strength=${aug_strength}
+  - --cascade=${cascade}
+  - --chans=${chans}
+  - --sens_chans=${sens_chans}
+  - --aug_weight_translation=${aug_weight_translation}
+  - --aug_weight_rotation=${aug_weight_rotation}
+  - --aug_weight_shearing=${aug_weight_shearing}
+  - --aug_weight_scaling=${aug_weight_scaling}
+  - --aug_weight_flipv=${aug_weight_flipv}
+  - --aug_weight_brightness=${aug_weight_brightness}
+  - --aug_weight_contrast=${aug_weight_contrast}
+  - --aug_max_rotation=${aug_max_rotation}
+  - --aug_max_scaling=${aug_max_scaling}
+  - --aug_min_scalex=${aug_min_scalex}
+  - wandb-on
