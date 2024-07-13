@@ -139,7 +139,7 @@ class ImageSliceData(Dataset):
         :param num_slices: total number of slices in the file
         """
         # evaluation mode
-        if self.forward is None:
+        if self.current_epoch_fn is None or not self.forward:
             return True
 
         epoch = self.current_epoch_fn()
@@ -159,8 +159,8 @@ class ImageSliceData(Dataset):
         recon_fname, dataslice = self.recon_examples[i]
 
         with h5py.File(image_fname, "r") as hf:
-            if dataslice >= hf[self.target_key].shape[0]:
-                raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {image_fname} which has {hf[self.target_key].shape[0]} slices.")
+            if dataslice >= hf[self.input_key].shape[0]:
+                raise IndexError(f"Requested slice {dataslice} exceeds the dataset size in {image_fname} which has {hf[self.input_key].shape[0]} slices.")
             image_input = hf[self.input_key][dataslice]
             image_grappa = hf[self.grappa_key][dataslice]
             if self.forward:

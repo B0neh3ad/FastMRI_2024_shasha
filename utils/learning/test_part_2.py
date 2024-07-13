@@ -47,7 +47,7 @@ def forward(args):
     model.load_state_dict(checkpoint['model'])
 
     forward_loader = create_image_data_loaders(
-        image_data_path=args.data_path,
+        data_path=args.data_path,
         recon_path=args.recon_path,
         args=args,
         isforward=True

@@ -8,7 +8,4 @@ python3.8 reconstruct_2.py \
   -b 2 \
   -n "nafnet" \
   -p "$DATA_DIR_PATH/leaderboard" \
-  --prev-net-name 'test_Varnet' \
-  --cascade 6 \
-  --chans 15 \
-  --sens_chans 4
+  --prev-net-name 'test_Varnet'

@@ -18,17 +18,10 @@ def parse():
     parser.add_argument('-n', '--net_name', type=Path, default='test_varnet', help='Name of network')
     parser.add_argument('-p', '--path_data', type=Path, default='/Data/leaderboard/', help='Directory of test data')
 
-    parser.add_argument('--cascade', type=int, default=1, help='Number of cascades | Should be less than 12')
-    parser.add_argument('--chans', type=int, default=9, help='Number of channels for cascade U-Net')
-    parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net')
-    parser.add_argument("--input_key", type=str, default='kspace', help='Name of input key')
-
-    parser.add_argument('--pn', '--prev-net-name', type=Path, default='test_Varnet', help='Name of previous network. (This should be the same as the dir name for prev network)')
-
-    # previous net info for reconstruction (for experiment)
-    parser.add_argument('--cascade', type=int, default=1, help='Number of cascades | Should be less than 12')
-    parser.add_argument('--chans', type=int, default=9, help='Number of channels for cascade U-Net | 18 in original varnet')
-    parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net | 8 in original varnet')
+    parser.add_argument('--input-key', type=str, default='image_input', help='Name of image input key')
+    parser.add_argument('--recon-key', type=str, default='reconstruction', help='Name of reconstruction key')
+    parser.add_argument('--grappa-key', type=str, default='image_grappa', help='Name of image grappa key')
+    parser.add_argument('--prev-net-name', type=Path, default='test_Varnet', help='Name of previous network. (This should be the same as the dir name for prev network)')
 
     # for debug mode
     parser.add_argument('--debug', type=bool, default=False, help='Set Debug mode')
@@ -61,7 +54,7 @@ if __name__ == '__main__':
 
     # Public Acceleration
     print(f'Start reconstruction for public acc({public_acc}) data')
-    args.data_path = args.path_data / public_acc  # / "kspace"
+    args.data_path = args.path_data / public_acc
     args.forward_dir = args.result_dir_path / args.net_name / 'reconstructions_leaderboard' / 'public'
     args.recon_path = args.result_dir_path / args.prev_net_name / 'reconstructions_leaderboard' / 'public'
     print(f'Saved into {args.forward_dir}')
@@ -69,7 +62,7 @@ if __name__ == '__main__':
 
     # Private Acceleration
     print(f'Start reconstruction for private acc({private_acc}) data')
-    args.data_path = args.path_data / private_acc  # / "kspace"
+    args.data_path = args.path_data / private_acc
     args.forward_dir = args.result_dir_path / args.net_name / 'reconstructions_leaderboard' / 'private'
     args.recon_path = args.result_dir_path / args.prev_net_name / 'reconstructions_leaderboard' / 'private'
     print(f'Saved into {args.forward_dir}')
