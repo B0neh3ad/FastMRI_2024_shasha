@@ -138,8 +138,9 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         f=exp_dir / 'model.pt'
     )
     if is_new_best:
-        shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
-        shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
+        # shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
+        # shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
+        shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model.pt')
     try:
         # save model weights
         pt_files = glob.glob(os.path.join(args.result_dir_path, "**", "*.pt"), recursive=True)
@@ -256,10 +257,6 @@ def train(args):
                                             current_epoch_fn=lambda: epoch)
     
     val_loss_log = np.empty((0, 2))
-
-    if args.wandb_on:
-        # save code
-        wandb.save("*.py")
 
     for epoch in range(start_epoch, args.num_epochs):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')

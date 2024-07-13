@@ -139,8 +139,9 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         f=exp_dir / 'model.pt'
     )
     if is_new_best:
-        shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
-        shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
+        # shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
+        # shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
+        shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model.pt')
     try:
         # save model weights
         pt_files = glob.glob(os.path.join(args.result_dir_path, "**", "*.pt"), recursive=True)
@@ -193,14 +194,14 @@ def reconstruct_with_prev_net(args, device):
     tmp_args.batch_size = 1
 
     # train
-    if input('Do you want to reconstruct train data? [Y/n]') == 'Y':
+    if args.recon_train:
         print("Reconstruct train data")
         train_data_loader = create_kspace_data_loaders(data_path=args.data_path_train, args=tmp_args, isforward=True)
         reconstructions, _ = test(tmp_args, model, train_data_loader)
         save_reconstructions(reconstructions, tmp_args.recon_path_train)
 
     # val
-    if input('Do you want to reconstruct val data? [Y/n]') == 'Y':
+    if args.recon_val:
         print("Reconstruct validation data")
         val_data_loader = create_kspace_data_loaders(data_path=args.data_path_val, args=tmp_args, isforward=True)
         reconstructions, _ = test(tmp_args, model, val_data_loader)
@@ -288,10 +289,6 @@ def train(args):
                                             current_epoch_fn=lambda: epoch)
 
     val_loss_log = np.empty((0, 2))
-
-    if args.wandb_on:
-        # save code
-        wandb.save("*.py")
 
     for epoch in range(start_epoch, args.num_epochs):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
