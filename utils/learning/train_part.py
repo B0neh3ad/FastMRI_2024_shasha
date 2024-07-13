@@ -143,7 +143,7 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model.pt')
     try:
         # save model weights
-        pt_files = glob.glob(os.path.join(args.result_dir_path, "**", "*.pt"), recursive=True)
+        pt_files = glob.glob(os.path.join(exp_dir, "*.pt"), recursive=True)
         for file in pt_files:
             wandb.save(file)
     except wandb.errors.Error as e:
