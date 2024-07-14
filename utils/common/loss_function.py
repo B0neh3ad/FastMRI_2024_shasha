@@ -120,7 +120,9 @@ class IndexBasedWeightedLoss(nn.Module):
 
     def forward(self, X, Y, data_range, slice_idx):
         ms_ssim_val = self.ms_ssim(X, Y, data_range)
-        return ms_ssim_val * self.weight_list[slice_idx]
+        for i in range(ms_ssim_val.shape[0]):
+            ms_ssim_val[i] = ms_ssim_val[i] * self.weight_list[slice_idx[i]]
+        return ms_ssim_val
 
     def set_weight(self, num_slices):
         for i in range(num_slices):
