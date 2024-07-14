@@ -37,6 +37,8 @@ def parse():
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
+    parser.add_argument('--no-val', default=False, help='This switch turns off validation', action='store_true')
+
     # loss type
     parser.add_argument('--loss', type=str, default='ssim', help='Loss function')
     parser.add_argument('--alpha', type=float, default=0.84, help='Alpha value for mixed loss')

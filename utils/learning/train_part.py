@@ -141,13 +141,6 @@ def save_model(args, exp_dir, epoch, model, optimizer, best_val_loss, is_new_bes
         # shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model_epoch{epoch}.pt')
         # shutil.copyfile(exp_dir / f'best_model_epoch{epoch}.pt', exp_dir / f'best_model.pt')
         shutil.copyfile(exp_dir / f'model.pt', exp_dir / f'best_model.pt')
-    try:
-        # save model weights
-        pt_files = glob.glob(os.path.join(exp_dir, "*.pt"), recursive=True)
-        for file in pt_files:
-            wandb.save(file)
-    except wandb.errors.Error as e:
-        print('checkpoint files are not saved since wandb.init() is not called')
 
 
 def load_checkpoint(model, optimizer, exp_dir):
@@ -243,7 +236,7 @@ def train(args):
     epoch = start_epoch
 
     train_augmentor = DataAugmentor(args, lambda: epoch)
-    val_augmentor = DataAugmentor(args, lambda: epoch, is_validation=True)
+    val_augmentor = DataAugmentor(args, lambda: epoch, is_validation=not args.no_val)
     mask_augmentor = MaskAugmentor(args, lambda: epoch,
                                    center_fractions=[0.08, 0.083],
                                    accelerations=[6, 7, 9],
@@ -252,7 +245,7 @@ def train(args):
     train_loader = create_kspace_data_loaders(data_path = args.data_path_train, args = args, shuffle=True,
                                               augmentor=train_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None,
                                               current_epoch_fn=lambda: epoch)
-    val_loader = create_kspace_data_loaders(data_path = args.data_path_val, args = args,
+    val_loader = create_kspace_data_loaders(data_path = args.data_path_val, args = args, shuffle=args.no_val,
                                             augmentor=val_augmentor if args.aug_on else None, mask_augmentor=mask_augmentor if args.mask_aug_on else None,
                                             current_epoch_fn=lambda: epoch)
     
@@ -281,9 +274,9 @@ def train(args):
         is_new_best = val_loss < best_val_loss
         best_val_loss = min(best_val_loss, val_loss)
 
-        save_model(args, args.exp_dir, epoch + 1, model, optimizer, best_val_loss, is_new_best)
+        save_model(args, args.exp_dir, epoch, model, optimizer, best_val_loss, is_new_best)
         print(
-            f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
+            f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
             f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
         )
         if args.wandb_on:
@@ -297,11 +290,38 @@ def train(args):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
+    else:
+        for epoch in range(start_epoch, args.num_epochs):
+            print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
+            train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
+            # use validation data to training
+            val_loss, val_time = train_epoch(args, epoch, model, val_loader, optimizer, loss_type)
+            if args.lr_scheduler_on:
+                scheduler.step(val_loss)
+
+            val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
+            file_path = os.path.join(args.val_loss_dir, "val_loss_log")
+            np.save(file_path, val_loss_log)
+            print(f"loss file saved! {file_path}")
+
+            train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
+
+            save_model(args, args.exp_dir, epoch, model, optimizer, 0., True)
+            print(
+                f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
+                f'TrainTime = {train_time:.4f}s',
+            )
+
+    try:
+        # save model weights
+        pt_files = glob.glob(os.path.join(args.exp_dir, "*.pt"), recursive=True)
+        for file in pt_files:
+            wandb.save(file)
+    except wandb.errors.Error as e:
+        print('checkpoint files are not saved since wandb.init() is not called')
 
     if args.wandb_on:
         # save log file
         npy_files = glob.glob(os.path.join(args.result_dir_path, '**', '*.npy'), recursive=True)
         for file in npy_files:
             wandb.save(file)
-
-        wandb.finish()

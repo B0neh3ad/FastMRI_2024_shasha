@@ -40,6 +40,8 @@ def parse():
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
 
+    parser.add_argument('--no-val', default=False, help='This switch turns off validation', action='store_true')
+
     parser.add_argument('--prev-net-name', type=Path, default='test_Varnet', help='Name of previous network. (This should be the same as the dir name for prev network)')
 
     # previous net info for reconstruction (for experiment)
