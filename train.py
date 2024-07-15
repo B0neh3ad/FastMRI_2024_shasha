@@ -45,6 +45,9 @@ def parse():
     parser.add_argument('--gamma', type=float, default=2.0, help='Gamma value for custom focal loss')
     parser.add_argument('--max-num-slices', type=float, default=22, help='Maximum number of slices in all dataset')
 
+    # optimizer
+    parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer')
+
     # for debug mode
     parser.add_argument('--debug', default=False, help='Set debug mode', action='store_true')
 
@@ -66,8 +69,11 @@ def parse():
     parser.add_argument('--aug_weight_mask', type=float, default=1.0, help='Weight of mask augmentation probability. Augmentation probability will be multiplied by this constant')
 
     # scheduler
-    parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.', action='store_true')
+    parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.',
+                        action='store_true')
+    parser.add_argument('--lr-scheduler', type=str, default='plateau', help='Scheduler')
     parser.add_argument('--patience', type=int, default=2, help='Patience for reduce learning rate')
+    parser.add_argument('--t-max', type=int, default=10, help='Period of learning rate when using cosine annealing')
 
     # wandb
     parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')
