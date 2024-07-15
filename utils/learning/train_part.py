@@ -15,8 +15,8 @@ from utils.model.varnet.varnet import VarNet
 
 import os
 
-from utils.mraugment.data_augment import DataAugmentor
-from utils.mraugment.mask_augment import MaskAugmentor
+from utils.data.augment.data_augment import DataAugmentor
+from utils.data.augment.mask_augment import MaskAugmentor
 
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()

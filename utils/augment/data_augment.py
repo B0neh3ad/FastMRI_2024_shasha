@@ -9,7 +9,7 @@ import torch
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from utils.mraugment.helpers import complex_crop_if_needed, crop_if_needed, complex_channel_first, complex_channel_last
+from utils.data.augment.helpers import complex_crop_if_needed, crop_if_needed, complex_channel_first, complex_channel_last
 from fastmri.data import transforms as T
 from fastmri import fft2c, ifft2c, rss_complex, complex_abs
 
