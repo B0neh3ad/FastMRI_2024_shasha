@@ -256,7 +256,7 @@ class AugmentationPipeline:
 
 
             
-class DataAugmentor:
+class KspaceDataAugmentor:
     """
     High-level class encompassing the augmentation pipeline and augmentation
     probability scheduling. A DataAugmentor instance can be initialized in the 
@@ -434,15 +434,15 @@ class DataAugmentor:
             help='Weight of probability of rotation by multiples of 90 degrees. Augmentation probability will be multiplied by this constant'
         )  
         parser.add_argument(
-            '--aug_weight_fliph', 
+            '--aug_weight_fliph',
             type=float,
-            default=1.0, 
+            default=1.0,
             help='Weight of horizontal flip probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_flipv',
             type=float,
-            default=1.0, 
+            default=1.0,
             help='Weight of vertical flip probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(

@@ -5,7 +5,7 @@ import os, sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-from utils.data.augment.data_augment import DataAugmentor
+from utils.data.augment.data_augment import KspaceDataAugmentor
 
 if os.getcwd() + '/utils/model/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/model/')
@@ -62,7 +62,7 @@ def parse():
     parser.add_argument('--iters-to-grad-acc', type=int, default=1, help='Iterations to gradient accumulation')
 
     # data augmentation config
-    parser = DataAugmentor.add_augmentation_specific_args(parser)
+    parser = KspaceDataAugmentor.add_augmentation_specific_args(parser)
 
     # mask augmentation config
     parser.add_argument('--mask_aug_on', default=False, help='This switch turns mask augmentation on.', action='store_true')
