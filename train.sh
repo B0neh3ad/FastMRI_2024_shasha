@@ -6,21 +6,22 @@ fi
 
 python3.8 train.py \
   -b 1 \
-  -e 50 \
-  -l 0.001 \
+  -e 15 \
+  -l 0.0001 \
+  -n "dircn" \
   -r 10 \
-  -n 'test_Varnet' \
   -t "$DATA_DIR_PATH/train/" \
   -v "$DATA_DIR_PATH/val/" \
+  --cascade 6 \
+  --chans 15 \
+  --sens_chans 4 \
   --aug_on \
   --mask_aug_on \
   --aug_strength 0.5 \
-  --debug \
-
-
-#  --cascade 6 \
-#  --chans 15 \
-#  --sens_chans 4
+  --loss "mixed" \
+  --alpha 0.5 \
+  --iters-to-grad-acc 32 \
+  --wandb-on
 
 #  --aug_weight_translation 0.5 \
 #  --aug_weight_rotation 0.5 \
