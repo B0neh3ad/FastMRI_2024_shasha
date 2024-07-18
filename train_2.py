@@ -4,6 +4,8 @@ import os, sys
 from pathlib import Path
 from dotenv import load_dotenv
 
+from utils.data.augment.image_augment import ImageDataAugmentor, CutMixUp
+
 if os.getcwd() + '/utils/model/' not in sys.path:
     sys.path.insert(1, os.getcwd() + '/utils/model/')
 from utils.learning.train_part_2 import train
@@ -70,6 +72,10 @@ def parse():
 
     # for gradient accumultation
     parser.add_argument('--iters-to-grad-acc', type=int, default=1, help='Iterations to gradient accumulation')
+
+    # image augmentation config
+    parser = CutMixUp.add_augmentation_specific_args(parser)
+    parser = ImageDataAugmentor.add_augmentation_specific_args(parser)
 
     # scheduler
     parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.',

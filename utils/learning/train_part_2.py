@@ -9,6 +9,8 @@ from tqdm import tqdm
 import wandb
 
 from collections import defaultdict
+
+from utils.data.augment.image_augment import CutMixUp, ImageDataAugmentor
 from utils.data.load_data import create_kspace_data_loaders, create_image_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss, get_mask
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
@@ -29,12 +31,15 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     # gradient scaling
     scaler = torch.GradScaler(device='cuda')
 
+    cutmixup = CutMixUp(args)
+
     for iter, data in enumerate(tqdm(data_loader)):
-        # TODO: slice_idx가 높은 데이터들은 점점 제외하기
         image, target, maximum, _, slice_idx = data
         image = image.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
+
+        image, target = cutmixup.augment(image, target)
         image_mask = get_mask(target)
 
         if args.amp:
@@ -283,8 +288,10 @@ def train(args):
 
     epoch = start_epoch
 
+    train_augmentor = ImageDataAugmentor(args, current_epoch_fn=lambda: epoch)
+
     train_loader = create_image_data_loaders(data_path=args.data_path_train, recon_path=args.recon_path_train, args=args, shuffle=True,
-                                              current_epoch_fn=lambda: epoch)
+                                              current_epoch_fn=lambda: epoch, augmentor=train_augmentor)
     val_loader = create_image_data_loaders(data_path=args.data_path_val, recon_path=args.recon_path_val, args=args, shuffle=args.no_val,
                                             current_epoch_fn=lambda: epoch)
 
@@ -362,6 +369,6 @@ def train(args):
 
     if args.wandb_on:
         # save log file
-        npy_files = glob.glob(os.path.join(args.result_dir_path, '**', '*.npy'), recursive=True)
+        npy_files = glob.glob(os.path.join(args.val_loss_dir, '*.npy'), recursive=True)
         for file in npy_files:
             wandb.save(file)

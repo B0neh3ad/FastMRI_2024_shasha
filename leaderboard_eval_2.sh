@@ -6,4 +6,4 @@ fi
 
 python3.8 leaderboard_eval.py \
   -lp "$DATA_DIR_PATH/leaderboard" \
-  -yp "$RESULT_DIR_PATH/nafnet/reconstructions_leaderboard"
+  -yp "./result_ensemble/nafnet1/reconstructions_leaderboard"

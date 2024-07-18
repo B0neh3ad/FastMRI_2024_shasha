@@ -15,7 +15,7 @@ from utils.model.varnet.varnet import VarNet
 
 import os
 
-from utils.data.augment.data_augment import DataAugmentor
+from utils.data.augment.data_augment import KspaceDataAugmentor
 from utils.data.augment.mask_augment import MaskAugmentor
 
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
@@ -244,8 +244,8 @@ def train(args):
 
     epoch = start_epoch
 
-    train_augmentor = DataAugmentor(args, lambda: epoch)
-    val_augmentor = DataAugmentor(args, lambda: epoch, is_validation=not args.no_val)
+    train_augmentor = KspaceDataAugmentor(args, lambda: epoch)
+    val_augmentor = KspaceDataAugmentor(args, lambda: epoch, is_validation=not args.no_val)
     mask_augmentor = MaskAugmentor(args, lambda: epoch,
                                    center_fractions=[0.08, 0.083],
                                    accelerations=[6, 7, 9],
@@ -331,6 +331,6 @@ def train(args):
 
     if args.wandb_on:
         # save log file
-        npy_files = glob.glob(os.path.join(args.result_dir_path, '**', '*.npy'), recursive=True)
+        npy_files = glob.glob(os.path.join(args.val_loss_dir, '*.npy'), recursive=True)
         for file in npy_files:
             wandb.save(file)
