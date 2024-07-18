@@ -62,22 +62,23 @@ def forward(args):
     if len(leaderboard_data) != 58:
         raise NotImplementedError('Leaderboard Data Size Should Be 58')
 
-    your_data = glob.glob(os.path.join(args.your_data_path, '*.h5'))
-    if len(your_data) != 58:
-        raise NotImplementedError('Your Data Size Should Be 58')
+    for yp in args.your_data_path:
+        your_data = glob.glob(os.path.join(yp, '*.h5'))
+        if len(your_data) != 58:
+            raise NotImplementedError('Your Data Size Should Be 58')
 
     ssim_total = 0
     idx = 0
     ssim_calculator = SSIM().to(device=device)
     ssim_list = [0] * 22
     slice_index_cnt = [0] * 22
+    yp_len = len(args.your_data_path)
 
     l_total, c_total, s_total = 0, 0, 0
-    # dithering = Dithering(sigma=0.02)
     with torch.no_grad():
         for i_subject in tqdm(range(58)):
             l_fname = os.path.join(args.leaderboard_data_path, 'brain_test' + str(i_subject + 1) + '.h5')
-            y_fname = os.path.join(args.your_data_path, 'brain_test' + str(i_subject + 1) + '.h5')
+            y_fname = [os.path.join(yp, 'brain_test' + str(i_subject + 1) + '.h5') for yp in args.your_data_path]
             with h5py.File(l_fname, "r") as hf:
                 num_slices = hf['image_label'].shape[0]
             for i_slice in range(num_slices):
@@ -95,9 +96,16 @@ def forward(args):
 
                     maximum = hf.attrs['max']
 
-                with h5py.File(y_fname, "r") as hf:
-                    recon = hf[args.output_key][i_slice]
-                    recon = torch.from_numpy(recon).to(device=device)
+                with h5py.File(y_fname[0], "r") as hf:
+                    recon_numpy = hf[args.output_key][i_slice]
+                    recon = torch.zeros(recon_numpy.shape).to(device=device)
+
+                for fname in y_fname:
+                    with h5py.File(fname, "r") as hf:
+                        recon_numpy = hf[args.output_key][i_slice]
+                        recon += torch.from_numpy(recon_numpy).to(device=device)
+
+                recon /= yp_len
 
                 # ssim_total += ssim_calculator(recon, target, maximum).cpu().numpy()
                 ssim_val, (l, c, s) = ssim_calculator(recon * mask, target * mask, maximum)
@@ -144,7 +152,7 @@ if __name__ == '__main__':
     """
     Modify Path Below To Test Your Results
     """
-    parser.add_argument('-yp', '--path_your_data', type=Path,
+    parser.add_argument('-yp', '--path_your_data', nargs='+', type=Path,
                         default='../result/test_Unet/reconstructions_leaderboard/')
     parser.add_argument('-key', '--output_key', type=str, default='reconstruction')
 
@@ -163,13 +171,13 @@ if __name__ == '__main__':
     # public acceleration
     print("[Start evaluation for public Acc]")
     args.leaderboard_data_path = args.path_leaderboard_data / public_acc / 'image'
-    args.your_data_path = args.path_your_data / 'public'
+    args.your_data_path = [yp / 'public' for yp in args.path_your_data]
     SSIM_public = forward(args)
 
     # private acceleration
     print("[Start evaluation for private Acc]")
     args.leaderboard_data_path = args.path_leaderboard_data / private_acc / 'image'
-    args.your_data_path = args.path_your_data / 'private'
+    args.your_data_path = [yp / 'private' for yp in args.path_your_data]
     SSIM_private = forward(args)
 
     print("Leaderboard SSIM : {:.4f}".format((SSIM_public + SSIM_private) / 2))
