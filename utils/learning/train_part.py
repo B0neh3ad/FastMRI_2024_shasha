@@ -261,46 +261,46 @@ def train(args):
     val_loss_log = np.empty((0, 2))
 
     for epoch in range(start_epoch, args.num_epochs):
-        print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
-        
-        train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
+        if not args.no_val:
+            print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
 
-        val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
-        if args.lr_scheduler_on:
-            scheduler.step(val_loss)
+            train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
 
-        val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
-        file_path = os.path.join(args.val_loss_dir, "val_loss_log")
-        np.save(file_path, val_loss_log)
-        print(f"loss file saved! {file_path}")
+            val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
+            if args.lr_scheduler_on:
+                scheduler.step(val_loss)
 
-        train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
-        val_loss = torch.tensor(val_loss).cuda(non_blocking=True)
-        num_subjects = torch.tensor(num_subjects).cuda(non_blocking=True)
+            val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
+            file_path = os.path.join(args.val_loss_dir, "val_loss_log")
+            np.save(file_path, val_loss_log)
+            print(f"loss file saved! {file_path}")
 
-        val_loss = val_loss / num_subjects
+            train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
+            val_loss = torch.tensor(val_loss).cuda(non_blocking=True)
+            num_subjects = torch.tensor(num_subjects).cuda(non_blocking=True)
 
-        is_new_best = val_loss < best_val_loss
-        best_val_loss = min(best_val_loss, val_loss)
+            val_loss = val_loss / num_subjects
 
-        save_model(args, args.exp_dir, epoch, model, optimizer, best_val_loss, is_new_best)
-        print(
-            f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
-            f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
-        )
-        if args.wandb_on:
-            wandb.log({"epoch": epoch})
-            wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
+            is_new_best = val_loss < best_val_loss
+            best_val_loss = min(best_val_loss, val_loss)
 
-        if is_new_best:
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@NewRecord@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            start = time.perf_counter()
-            save_reconstructions(reconstructions, args.val_dir, targets=targets, inputs=inputs)
+            save_model(args, args.exp_dir, epoch, model, optimizer, best_val_loss, is_new_best)
             print(
-                f'ForwardTime = {time.perf_counter() - start:.4f}s',
+                f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
+                f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
             )
-    else:
-        for epoch in range(start_epoch, args.num_epochs):
+            if args.wandb_on:
+                wandb.log({"epoch": epoch})
+                wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
+
+            if is_new_best:
+                print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@NewRecord@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                start = time.perf_counter()
+                save_reconstructions(reconstructions, args.val_dir, targets=targets, inputs=inputs)
+                print(
+                    f'ForwardTime = {time.perf_counter() - start:.4f}s',
+                )
+        else:
             print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
             train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
             # use validation data to training
@@ -321,13 +321,13 @@ def train(args):
                 f'TrainTime = {train_time:.4f}s',
             )
 
-    try:
-        # save model weights
-        pt_files = glob.glob(os.path.join(args.exp_dir, "*.pt"), recursive=True)
-        for file in pt_files:
-            wandb.save(file)
-    except wandb.errors.Error as e:
-        print('checkpoint files are not saved since wandb.init() is not called')
+        try:
+            # save model weights
+            pt_files = glob.glob(os.path.join(args.exp_dir, "*.pt"), recursive=True)
+            for file in pt_files:
+                wandb.save(file)
+        except wandb.errors.Error as e:
+            print('checkpoint files are not saved since wandb.init() is not called')
 
     if args.wandb_on:
         # save log file
