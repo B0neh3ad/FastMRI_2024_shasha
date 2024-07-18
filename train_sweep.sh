@@ -1,0 +1,1 @@
+wandb sweep --project FastMRI_2024_js1044k train_sweep.yaml

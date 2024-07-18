@@ -1,0 +1,53 @@
+program: train.py
+method: random
+metric:
+    goal: minimize
+    name: val_loss
+parameters:
+    batch-size:
+        value: 1
+    num-epochs:
+        value: 10
+    lr:
+        value: 0.0001
+    report-interval:
+        value: 100
+    net-name:
+        value: 'dircn'
+    data-path-train:
+        value: "/mnt/c/Users/js1044k/Downloads/Data/train/"
+    data-path-val:
+        value: "/mnt/c/Users/js1044k/Downloads/Data/val"
+    optimizer:
+        value: "radam"
+    lr-scheduler-on:
+        value: true
+    lr-scheduler:
+        value: "plateau"
+    aug_on:
+        value: true
+    mask_aug_on:
+        value: true
+    aug_strength:
+        value: 0.5
+    loss:
+        value: "mixed"
+    alpha:
+        value: 0.5
+    cascade:
+        values: [6, 7, 8, 9]
+    chans:
+        values: [13, 14, 15, 16]
+    sens_chans:
+        values: [3, 4, 5, 6]
+    grad-clip-on:
+        value: true
+    iters-to-grad-acc:
+        value: 32
+    wandb-on:
+        value: true
+
+command:
+    - python3.8
+    - ${program}
+    - ${args_no_boolean_flags}
