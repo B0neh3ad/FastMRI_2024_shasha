@@ -6,7 +6,7 @@ fi
 
 python3.8 train.py \
   -b 1 \
-  -e 50 \
+  -e 40 \
   -l 0.001 \
   -r 10 \
   -n 'test_Varnet' \
@@ -14,14 +14,14 @@ python3.8 train.py \
   -v "$DATA_DIR_PATH/val/" \
   --aug_on \
   --mask_aug_on \
-  --aug_strength 0.5 \
+  --aug_strength 1.0 \
   --cascade 6 \
   --chans 15 \
   --sens_chans 4 \
-  --aug_weight_translation 0.5 \
-  --aug_weight_rotation 0.5 \
+  --aug_weight_translation 1.0 \
+  --aug_weight_rotation 1.0 \
   --aug_weight_shearing 0.0 \
-  --aug_weight_scaling 0.5 \
+  --aug_weight_scaling 1.0 \
   --aug_weight_flipv 0.0 \
   --aug_weight_brightness 0.0 \
   --aug_weight_contrast 0.5 \
@@ -30,7 +30,7 @@ python3.8 train.py \
   --aug_max_rotation 10.0 \
   --aug_max_scaling 0.2 \
   --wandb-on \
-  --wandb-run-id 5nkb81ny 
+  --wandb-run-id j6sf4j6q
 
 
 
