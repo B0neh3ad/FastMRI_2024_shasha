@@ -81,7 +81,8 @@ Python 3.8.10
 - Vessl 서버
 1. required package 설치
      ```bash
-     pip install fastmri wandb python-dotenv matplotlib opencv-python lmdb einops pygrappa
+     pip install fastmri wandb python-dotenv matplotlib lmdb einops pygrappa
+     pip install opencv-python==4.8.0.74
      ```
 
 2. torch cpu 버전으로 설치될 경우
