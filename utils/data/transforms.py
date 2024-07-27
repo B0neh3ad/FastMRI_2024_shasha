@@ -110,7 +110,8 @@ class ImageDataTransform:
             maximum = -1
 
         image = to_tensor(image)
+        target = to_tensor(target)
 
-        # TODO: 나중에 짬나면 augmentation 적용하는 코드 작성하기
+        image, target = self.augmentor(image, target)
 
         return image, target, maximum, fname, slice
