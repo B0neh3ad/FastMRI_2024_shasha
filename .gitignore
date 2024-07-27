@@ -165,3 +165,4 @@ cython_debug/
 wandb
 result/
 requirements.txt
+sweep.yaml
