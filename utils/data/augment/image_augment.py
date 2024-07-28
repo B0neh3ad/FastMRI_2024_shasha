@@ -503,5 +503,17 @@ class ImageDataAugmentor:
             default=0.25,
             help='Maximum scaling applied as fraction of image dimensions. If set to s, a scaling factor between 1.0-s and 1.0+s will be applied.'
         )
+        parser.add_argument(
+            '--aug_min_scalex',
+            type=float,
+            default=0.9,
+            help='Minimum horizontal scaling applied as fraction of image dimensions.'
+        )
+        parser.add_argument(
+            '--aug_max_scalex',
+            type=float,
+            default=1.0,
+            help='Maximum horizontal scaling applied as fraction of image dimensions.'
+        )
 
         return parser
