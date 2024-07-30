@@ -128,4 +128,30 @@ class IndexBasedWeightedLoss(nn.Module):
 
     def set_weight(self, num_slices):
         for i in range(num_slices):
+            # assume that the weight is prop to size of mask which is prop to cos^2
             self.weight_list.append(math.cos(i * math.pi / (num_slices * 2)) ** 2)
+
+class MixIndexL1Loss(nn.Module):
+    """
+    Mixed loss module. (Index-based weighted MS-SSIM + L1)
+    !!!! Not yet has been added to the training script. !!!!
+    """
+
+    def __init__(self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, alpha: float = 0.84, max_num_slices: int = 22):
+        """
+        Args:
+            win_size: Window size for SSIM calculation.
+            k1: k1 parameter for SSIM calculation.
+            k2: k2 parameter for SSIM calculation.
+            alpha: mixing factor of SSIM and L1 loss.
+        """
+        super(MixIndexL1Loss, self).__init__()
+        self.alpha = alpha
+        self.id_ms_ssim = IndexBasedWeightedLoss(win_size=win_size, k1=k1, k2=k2, max_num_slices=max_num_slices)
+        self.l1_loss = nn.L1Loss(reduction='mean')
+
+    def forward(self, X, Y, data_range, slice_idx):
+        id_ms_ssim_val = self.id_ms_ssim(X, Y, data_range, slice_idx)
+        l1_loss_val = self.l1_loss(X, Y)
+        mixed_loss_val = self.alpha * id_ms_ssim_val + (1 - self.alpha) * l1_loss_val
+        return mixed_loss_val
