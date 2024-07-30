@@ -13,11 +13,36 @@ from utils.data.augment.helpers import complex_crop_if_needed, crop_if_needed, c
 from fastmri.data import transforms as T
 from fastmri import fft2c, ifft2c, rss_complex, complex_abs
 
+
+"""
+AugmentationPipeline and KspaceDataAugmentor are used in the training script.
+- AugmentationPipeline: Describes the transformations applied to MRI data and handles 
+    augmentation probabilities including generating random parameters for each augmentation.
+- KspaceDataAugmentor: High-level class encompassing the augmentation pipeline and augmentation
+    probability scheduling. A DataAugmentor instance can be initialized in the main training code
+    and passed to the DataTransform to be applied to the training data.
+"""
+
 class AugmentationPipeline:
     """
     Describes the transformations applied to MRI data and handles
     augmentation probabilities including generating random parameters for 
     each augmentation.
+
+    The pipeline consists of three types of transformations:
+    1. Pixel-preserving transformations:
+        - Horizontal flip
+        - Vertical flip
+        - Rotation by multiples of 90 degrees
+        - Translation by integer number of pixels
+    2. Color transformations:
+        - Brightness
+        - Contrast
+    3. Interpolating transformations:
+        - Rotation
+        - Shearing
+        - Scaling
+        - Horizontal scaling
     """
     def __init__(self, hparams):
         self.hparams = hparams

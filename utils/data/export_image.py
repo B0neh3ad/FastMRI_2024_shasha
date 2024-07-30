@@ -6,6 +6,12 @@ from dotenv import load_dotenv
 import numpy as np
 from tqdm import tqdm
 
+
+"""
+this script is for exporting the images from h5 files (not used in the training)
+- export_image: export the images from h5 files
+"""
+
 def export_image(img_dir, export_dir, keys):
     for key in keys:
         temp_export_dir = export_dir

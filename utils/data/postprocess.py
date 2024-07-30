@@ -9,6 +9,13 @@ import glob
 import argparse
 from tqdm import tqdm
 
+
+"""
+this script is for postprocessing the reconstructed images (not used in the training)
+- Dithering: Add gaussian noise to the image
+- Postprocessing: Apply dithering to the reconstructed images
+"""
+
 class Dithering:
     def __init__(self, sigma):
         self.sigma = sigma

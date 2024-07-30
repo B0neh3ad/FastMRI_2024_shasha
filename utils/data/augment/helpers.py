@@ -1,7 +1,17 @@
 """
 Utility and helper functions for MRAugment.
+- to_repeated_list: Convert a scalar to a list of the same value.
+- pad_if_needed: Pad the image if it is smaller than the specified size.
+- crop_if_needed: Crop the image if it is larger than the specified size.
+- complex_crop_if_needed: Crop the complex image if it is larger than the specified size.
+- ifft2_np: Perform 2D inverse Fourier transform.
+- fft2_np: Perform 2D Fourier transform.
+- complex_channel_first: Change the channel dimension to the first dimension.
+- complex_channel_last: Change the channel dimension to the last dimension.
 """
+
 import numpy as np
+
 
 def to_repeated_list(a, length):
     if isinstance(a, list):

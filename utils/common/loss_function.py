@@ -9,6 +9,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+"""
+These loss functions are used in the training script. (Not validation)
+- SSIMLoss: SSIM loss module.
+- MixedLoss: Mixed loss module. (MS-SSIM + L1)
+- CustomFocalLoss: Focal loss (with MS-SSIM loss) module.
+- IndexBasedWeightedLoss: Index-based weighted MS-SSIM loss module.
+- MixIndexL1Loss: Mixed loss module. (Index-based weighted MS-SSIM + L1)
+!!! MixIndexL1Loss is not yet added to the training script. !!!
+"""
+
 
 class SSIMLoss(nn.Module):
     """

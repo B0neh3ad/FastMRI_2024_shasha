@@ -10,6 +10,15 @@ from utils.model.nafnet.nafnet import NAFNet
 
 from tqdm import tqdm
 
+
+"""
+this function is used to test the k2i + i2i model on the test set
+- the model is loaded from the checkpoint
+- the model is set to evaluation mode
+- the model is tested on the test set
+- the reconstructions are saved
+"""
+
 def test(args, model, data_loader):
     model.eval()
     reconstructions = defaultdict(dict)

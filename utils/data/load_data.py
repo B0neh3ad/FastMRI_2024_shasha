@@ -5,7 +5,26 @@ from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
 import numpy as np
 
+
+"""
+these functions are used in the training script.
+- KspaceSliceData: Dataset class for k-space data. (used for create_kspace_data_loaders)
+- ImageSliceData: Dataset class for image data. (used for create_image_data_loaders)
+- create_kspace_data_loaders: Create data loaders for k-space data. (used for training k2i model)
+- create_image_data_loaders: Create data loaders for image data. (used for training i2i model)
+"""
+
 class KspaceSliceData(Dataset):
+    """
+    Dataset class for k-space data. (used for create_kspace_data_loaders)
+    Args:
+        root: Path to the dataset.
+        transform: Data augmentation for k-space data.
+        input_key: Key in the HDF5 file for the input k-space data.
+        target_key: Key in the HDF5 file for the target image data.
+        forward: If True, the dataset is used for the forward pass.
+        current_epoch_fn: Function to get the current epoch.
+    """
     def __init__(self, root, transform, input_key, target_key, forward=False, current_epoch_fn=None):
         self.transform = transform
         self.input_key = input_key
@@ -87,6 +106,19 @@ class KspaceSliceData(Dataset):
         return self.transform(mask, kspace, target, attrs, kspace_fname.name, dataslice)
 
 class ImageSliceData(Dataset):
+    """
+    Dataset class for image data. (used for create_image_data_loaders)
+    Args:
+        data_path: Path to the dataset.
+        recon_path: Path to the reconstruction dataset.
+        transform: Data augmentation for image data.
+        input_key: Key in the HDF5 file for the input image data.
+        recon_key: Key in the HDF5 file for the reconstruction image data.
+        grappa_key: Key in the HDF5 file for the GRAPPA image data.
+        target_key: Key in the HDF5 file for the target image data.
+        forward: If True, the dataset is used for the forward pass.
+        current_epoch_fn: Function to get the current epoch
+    """
     def __init__(self, data_path, recon_path, transform,
                  input_key="image_input",
                  recon_key="reconstruction",
@@ -179,6 +211,19 @@ class ImageSliceData(Dataset):
         return self.transform(image, target, attrs, image_fname.name, dataslice)
 
 def create_kspace_data_loaders(data_path, args, current_epoch_fn=None, augmentor=None, mask_augmentor=None, shuffle=False, isforward=False):
+    """
+    Create data loaders for k-space data. (used for training k2i model)
+    Args:
+        data_path: Path to the dataset.
+        args: Arguments for the training script.
+        current_epoch_fn: Function to get the current epoch.
+        augmentor: Data augmentor for the input image.
+        mask_augmentor: Data augmentor for the mask.
+        shuffle: If True, shuffle the dataset.
+        isforward: If True, the dataset is used for the forward pass.
+    Returns:
+        data_loader: Data loader for the dataset.
+    """
     if isforward == False:
         max_key_ = args.max_key
         target_key_ = args.target_key
@@ -204,6 +249,19 @@ def create_kspace_data_loaders(data_path, args, current_epoch_fn=None, augmentor
     return data_loader
 
 def create_image_data_loaders(data_path, recon_path, args, current_epoch_fn=None, augmentor=None, shuffle=False, isforward=False):
+    """
+    Create data loaders for image data. (used for training i2i model)
+    Args:
+        data_path: Path to the dataset.
+        recon_path: Path to the reconstruction dataset.
+        args: Arguments for the training script.
+        current_epoch_fn: Function to get the current epoch.
+        augmentor: Data augmentor for the input image.
+        shuffle: If True, shuffle the dataset.
+        isforward: If True, the dataset is used for the forward pass.
+    Returns:
+        data_loader: Data loader for the dataset.
+    """
     if isforward == False:
         max_key_ = args.max_key
         target_key_ = args.target_key

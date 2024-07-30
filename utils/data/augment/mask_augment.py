@@ -5,6 +5,11 @@ import numpy as np
 import torch
 
 
+"""
+These functions are used in the training script.
+- MaskAugmentor: Mask augmentor for k-space data.
+"""
+
 class MaskAugmentor:
     def __init__(self,
                  hparams,

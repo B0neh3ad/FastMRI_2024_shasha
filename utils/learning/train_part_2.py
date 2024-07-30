@@ -23,6 +23,15 @@ from utils.model.varnet.varnet import VarNet
 from utils.learning.test_part import test
 
 import os
+
+
+"""
+this function is used to train the i2i model
+- the model is trained on the training set
+- the model is validated on the validation set
+- the best model is saved
+"""
+
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()
     start_epoch = start_iter = time.perf_counter()
