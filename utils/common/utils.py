@@ -25,6 +25,7 @@ These functions are used in the training script.
 - show_kspace_slice: Show kspace slice. (For debugging)
 - show_image_slices: Show image slices. (For debugging)
 - get_mask: Get mask for the target.
+- get_mask2: Get mask for the target. (smaller mask)
 """
 
 
@@ -119,6 +120,23 @@ def get_mask(target: torch.Tensor) -> torch.Tensor:
         mask = F.conv2d(mask, kernel, padding=1)
         mask = (mask > 0).float()
     for _ in range(14):
+        mask = F.conv2d(mask, kernel, padding=1)
+        mask = (mask == kernel.sum()).float()
+    mask = mask.squeeze(1)
+
+    return mask
+
+def get_mask2(target: torch.Tensor) -> torch.Tensor:
+    mask = (target > 5e-5).float()
+    kernel = torch.ones((1, 1, 3, 3), dtype=torch.float32, device=target.device)
+    mask = mask.unsqueeze(1)
+    for _ in range(1):
+        mask = F.conv2d(mask, kernel, padding=1)
+        mask = (mask == kernel.sum()).float()
+    for _ in range(15):
+        mask = F.conv2d(mask, kernel, padding=1)
+        mask = (mask > 0).float()
+    for _ in range(30):
         mask = F.conv2d(mask, kernel, padding=1)
         mask = (mask == kernel.sum()).float()
     mask = mask.squeeze(1)

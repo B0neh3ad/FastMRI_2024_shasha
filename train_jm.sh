@@ -15,7 +15,7 @@ python3.8 train.py \
   --chans 10 \
   --sens_chans 4 \
   --optimizer 'adamw' \
-  --num-epochs 14 \
+  --num-epochs 50 \
   --lr 0.0001 \
   --iters-to-grad-acc 1 \
   --aug_on \

@@ -43,6 +43,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
         image_mask = get_mask(target)
+        # image_mask = get_mask2(target) # smaller mask for high epochs to train inside of brain
 
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
