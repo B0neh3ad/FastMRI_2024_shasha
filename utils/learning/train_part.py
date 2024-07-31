@@ -18,6 +18,15 @@ import os
 from utils.data.augment.data_augment import KspaceDataAugmentor
 from utils.data.augment.mask_augment import MaskAugmentor
 
+
+"""
+this function is used to train the k2i model
+- the model is trained on the training set
+- the model is validated on the validation set
+- the model is saved if it is the best model
+- the model is saved at the end of each epoch
+"""
+
 def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     model.train()
     start_epoch = start_iter = time.perf_counter()

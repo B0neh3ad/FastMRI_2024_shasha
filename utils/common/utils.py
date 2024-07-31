@@ -16,6 +16,18 @@ import random
 from matplotlib import pyplot as plt
 import cv2
 
+
+"""
+These functions are used in the training script.
+- save_reconstructions: Save reconstructions to h5 files.
+- ssim_loss: Compute SSIM loss(1 - SSIM). For validation.
+- seed_fix: Fix seed for reproducibility.
+- show_kspace_slice: Show kspace slice. (For debugging)
+- show_image_slices: Show image slices. (For debugging)
+- get_mask: Get mask for the target.
+"""
+
+
 def save_reconstructions(reconstructions, out_dir, targets=None, inputs=None):
     """
     Saves the reconstructions from a model into h5 files that is appropriate for submission
@@ -39,7 +51,7 @@ def save_reconstructions(reconstructions, out_dir, targets=None, inputs=None):
 
     result_dir_path = os.environ['RESULT_DIR_PATH']
 
-def ssim_loss(gt, pred, maxval=None):
+def ssim_loss(gt, pred, maxval=None) -> float:
     """Compute Structural Similarity Index Metric (SSIM)
        ssim_loss is defined as (1 - ssim)
     """
@@ -96,7 +108,7 @@ def show_image_slices(img_path, slice_idxs=[0], cmap='gray'):
             plt.title(key)
             ax.imshow(img_slice, cmap=cmap)
 
-def get_mask(target):
+def get_mask(target: torch.Tensor) -> torch.Tensor:
     mask = (target > 5e-5).float()
     kernel = torch.ones((1, 1, 3, 3), dtype=torch.float32, device=target.device)
     mask = mask.unsqueeze(1)

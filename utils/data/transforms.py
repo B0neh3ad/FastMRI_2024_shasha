@@ -1,5 +1,12 @@
 import torch
 
+"""
+this file is for data augmentation
+- to_tensor: Convert numpy array to PyTorch tensor.
+- KspaceDataTransform: Data augmentation for k-space data.
+- ImageDataTransform: Data augmentation for image data.
+"""
+
 def to_tensor(data):
     """
     Convert numpy array to PyTorch tensor. For complex arrays, the real and imaginary parts
@@ -12,6 +19,14 @@ def to_tensor(data):
     return torch.from_numpy(data)
 
 class KspaceDataTransform:
+    """
+    Data augmentation for k-space data.
+    Args:
+        isforward: If True, the transform is used for the forward pass.
+        max_key: Key in the metadata dictionary for the maximum value in the image.
+        augmentor: Data augmentor for the input k-space.
+        mask_augmentor: Mask augmentor for the input k-space.
+    """
     def __init__(self, isforward, max_key, augmentor = None, mask_augmentor = None):
         self.isforward = isforward
         self.max_key = max_key
@@ -77,6 +92,13 @@ class KspaceDataTransform:
 
 
 class ImageDataTransform:
+    """
+    Data augmentation for image data.
+    Args:
+        isforward: If True, the transform is used for the forward pass.
+        max_key: Key in the metadata dictionary for the maximum value in the image.
+        augmentor: Data augmentor for the input image.
+    """
     def __init__(self, isforward, max_key, augmentor = None):
         self.isforward = isforward
         self.max_key = max_key

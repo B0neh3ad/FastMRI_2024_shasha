@@ -3,6 +3,14 @@ import torchvision.transforms.functional as TF
 import numpy as np
 import torch
 
+
+"""
+These functions are used in the i2i training script. (train2)
+- CutMixUp: CutMix and MixUp augmentation module.
+- AugmentationPipeline: Augmentation pipeline module.
+- ImageDataAugmentor: High-level class encompassing the augmentation pipeline and augmentation probability scheduling.
+"""
+
 class CutMixUp:
     def __init__(self, hparams):
         self.hparams = hparams
@@ -162,6 +170,18 @@ class CutMixUp:
         return parser
 
 class AugmentationPipeline:
+    """
+    Augmentation pipeline module.
+
+    The following transformations are supported:
+    - Translation
+    - Rotation
+    - Shearing
+    - Scaling
+    - Horizontal Scaling
+    - Horizontal Flip
+    - Vertical Flip
+    """
     def __init__(self, hparams):
         self.hparams = hparams
         self.weight_dict ={
