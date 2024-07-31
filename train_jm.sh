@@ -6,31 +6,35 @@ fi
 
 python3.8 train.py \
   -b 1 \
-  -e 40 \
-  -l 0.001 \
-  -r 10 \
   -n 'test_Varnet' \
   -t "$DATA_DIR_PATH/train/" \
   -v "$DATA_DIR_PATH/val/" \
+  --report-interval 500 \
+  --seed 230 \
+  --cascade 6 \
+  --chans 10 \
+  --sens_chans 4 \
+  --optimizer 'adamw' \
+  --num-epochs 14 \
+  --lr 0.0001 \
+  --iters-to-grad-acc 1 \
   --aug_on \
   --mask_aug_on \
-  --aug_strength 1.0 \
-  --cascade 6 \
-  --chans 15 \
-  --sens_chans 4 \
+  --aug_strength 0.6 \
   --aug_weight_translation 1.0 \
   --aug_weight_rotation 1.0 \
   --aug_weight_shearing 0.0 \
   --aug_weight_scaling 1.0 \
   --aug_weight_flipv 0.0 \
-  --aug_weight_brightness 0.0 \
+  --aug_weight_brightness 1.0 \
   --aug_weight_contrast 0.5 \
   --aug_max_translation_x 0.1 \
   --aug_max_translation_y 0.1 \
-  --aug_max_rotation 10.0 \
-  --aug_max_scaling 0.2 \
+  --aug_max_rotation 20.0 \
+  --aug_max_scaling 0.25 \
+  --aug_min_scalex 0.8 \
   --wandb-on \
-  --wandb-run-id j6sf4j6q
+#  --wandb-run-id
 
 
 
