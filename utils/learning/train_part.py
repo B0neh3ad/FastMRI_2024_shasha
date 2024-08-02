@@ -256,8 +256,9 @@ def train(args):
     if args.wandb_run_id is not None:
         model, optimizer, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir)
 
+    # Load checkpoint in /save if load_model is True
     if args.load_model:
-        model, _, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir)
+        model, _, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir / 'save')
 
     epoch = start_epoch
 

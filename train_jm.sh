@@ -16,11 +16,11 @@ python3.8 train.py \
   --sens_chans 4 \
   --optimizer 'adamw' \
   --num-epochs 60 \
-  --lr 0.000001 \
+  --lr 0.00001 \
   --iters-to-grad-acc 1 \
   --aug_on \
   --mask_aug_on \
-  --aug_strength 0.8 \
+  --aug_strength 0.6 \
   --aug_weight_translation 1.0 \
   --aug_weight_rotation 1.0 \
   --aug_weight_shearing 0.0 \

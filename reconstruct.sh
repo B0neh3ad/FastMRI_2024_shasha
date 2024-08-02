@@ -9,5 +9,5 @@ python3.8 reconstruct.py \
   -n 'test_Varnet' \
   -p "$DATA_DIR_PATH/leaderboard" \
   --cascade 6 \
-  --chans 10 \
+  --chans 15 \
   --sens_chans 4
