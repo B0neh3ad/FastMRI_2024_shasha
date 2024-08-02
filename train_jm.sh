@@ -10,17 +10,17 @@ python3.8 train.py \
   -t "$DATA_DIR_PATH/train/" \
   -v "$DATA_DIR_PATH/val/" \
   --report-interval 500 \
-  --seed 230 \
+  --seed 430 \
   --cascade 6 \
-  --chans 10 \
+  --chans 15 \
   --sens_chans 4 \
   --optimizer 'adamw' \
-  --num-epochs 50 \
-  --lr 0.0001 \
+  --num-epochs 60 \
+  --lr 0.000001 \
   --iters-to-grad-acc 1 \
   --aug_on \
   --mask_aug_on \
-  --aug_strength 0.6 \
+  --aug_strength 0.8 \
   --aug_weight_translation 1.0 \
   --aug_weight_rotation 1.0 \
   --aug_weight_shearing 0.0 \
@@ -34,6 +34,8 @@ python3.8 train.py \
   --aug_max_scaling 0.25 \
   --aug_min_scalex 0.8 \
   --wandb-on \
+  --load-model \
+#  --mask_small_on \
 #  --wandb-run-id
 
 

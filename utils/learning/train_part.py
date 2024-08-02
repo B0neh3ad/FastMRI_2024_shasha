@@ -8,7 +8,7 @@ import wandb
 
 from collections import defaultdict
 from utils.data.load_data import create_kspace_data_loaders
-from utils.common.utils import save_reconstructions, ssim_loss, get_mask
+from utils.common.utils import save_reconstructions, ssim_loss, get_mask, get_mask2
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
 from utils.model.dircn.dircn import DIRCN
 from utils.model.varnet.varnet import VarNet
@@ -43,7 +43,9 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
         image_mask = get_mask(target)
-        # image_mask = get_mask2(target) # smaller mask for high epochs to train inside of brain
+
+        if args.mask_small_on:
+            image_mask = get_mask2(target) # smaller mask for high epochs to train inside of brain
 
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
@@ -199,7 +201,9 @@ def train(args):
                 "aug_strength": args.aug_strength,
                 "mask_aug_on": args.mask_aug_on,
                 "lr_scheduler_on": args.lr_scheduler_on,
-                "patience": args.patience
+                "patience": args.patience,
+                "mask_small_on": args.mask_small_on,
+                "load_model": args.load_model
             }
         )
         wandb.define_metric("epoch")
@@ -251,6 +255,9 @@ def train(args):
     # Load checkpoint only if wandb_run_id is not None
     if args.wandb_run_id is not None:
         model, optimizer, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir)
+
+    if args.load_model:
+        model, _, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir)
 
     epoch = start_epoch
 
