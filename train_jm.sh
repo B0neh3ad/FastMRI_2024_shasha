@@ -10,13 +10,13 @@ python3.8 train.py \
   -t "$DATA_DIR_PATH/train/" \
   -v "$DATA_DIR_PATH/val/" \
   --report-interval 500 \
-  --seed 230 \
+  --seed 430 \
   --cascade 6 \
-  --chans 10 \
+  --chans 15 \
   --sens_chans 4 \
   --optimizer 'adamw' \
-  --num-epochs 50 \
-  --lr 0.0001 \
+  --num-epochs 60 \
+  --lr 0.00001 \
   --iters-to-grad-acc 1 \
   --aug_on \
   --mask_aug_on \
@@ -34,6 +34,8 @@ python3.8 train.py \
   --aug_max_scaling 0.25 \
   --aug_min_scalex 0.8 \
   --wandb-on \
+  --load-model \
+#  --mask_small_on \
 #  --wandb-run-id
 
 

@@ -67,6 +67,7 @@ def parse():
     # mask augmentation config
     parser.add_argument('--mask_aug_on', default=False, help='This switch turns mask augmentation on.', action='store_true')
     parser.add_argument('--aug_weight_mask', type=float, default=1.0, help='Weight of mask augmentation probability. Augmentation probability will be multiplied by this constant')
+    parser.add_argument('--mask_small_on', default=False, help='This switch turns mask smaller', action='store_true')
 
     # scheduler
     parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.',
@@ -77,6 +78,7 @@ def parse():
 
     # wandb
     parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')
+    parser.add_argument('--load-model', default=False , help='Load last model. in /checkpoints/save Do not use with --wandb-run-id', action='store_true')
     parser.add_argument('--wandb-run-id', type=str, default=None, help='WandB run ID to resume. If not provided, starts a new run.')
 
     load_dotenv()
