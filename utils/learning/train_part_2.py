@@ -284,7 +284,7 @@ def train(args):
         optimizer = torch.optim.Adam(model.parameters(), args.lr)
 
     if args.lr_scheduler == "cosine":
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.t_max, verbose=True)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.t_max, eta_min=1e-6, verbose=True)
     else:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, verbose=True)
 
@@ -306,15 +306,18 @@ def train(args):
 
     val_loss_log = np.empty((0, 2))
 
-    if not args.no_val:
-        for epoch in range(start_epoch, args.num_epochs):
+    for epoch in range(start_epoch, args.num_epochs):
+        if not args.no_val:
             print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
 
             train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
 
             val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
             if args.lr_scheduler_on:
-                scheduler.step(val_loss)
+                if args.lr_scheduler == "cosine":
+                    scheduler.step()
+                else:
+                    scheduler.step(val_loss)
 
             val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
             file_path = os.path.join(args.val_loss_dir, "val_loss_log")
@@ -346,14 +349,16 @@ def train(args):
                 print(
                     f'ForwardTime = {time.perf_counter() - start:.4f}s',
                 )
-    else:
-        for epoch in range(start_epoch, args.num_epochs):
+        else:
             print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
             train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
             # use validation data to training
             val_loss, val_time = train_epoch(args, epoch, model, val_loader, optimizer, loss_type)
             if args.lr_scheduler_on:
-                scheduler.step(val_loss)
+                if args.lr_scheduler == "cosine":
+                    scheduler.step()
+                else:
+                    scheduler.step(val_loss)
 
             val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
             file_path = os.path.join(args.val_loss_dir, "val_loss_log")
@@ -362,19 +367,23 @@ def train(args):
 
             train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
 
-            save_model(args, args.exp_dir, epoch, model, optimizer, 0., True)
+            if args.wandb_on:
+                wandb.log({"epoch": epoch})
+                wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
+
+            save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, True)
             print(
                 f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
                 f'TrainTime = {train_time:.4f}s',
             )
 
-    try:
-        # save model weights
-        pt_files = glob.glob(os.path.join(args.exp_dir, "*.pt"), recursive=True)
-        for file in pt_files:
-            wandb.save(file)
-    except wandb.errors.Error as e:
-        print('checkpoint files are not saved since wandb.init() is not called')
+        try:
+            # save model weights
+            pt_files = glob.glob(os.path.join(args.exp_dir, "*.pt"), recursive=True)
+            for file in pt_files:
+                wandb.save(file)
+        except wandb.errors.Error as e:
+            print('checkpoint files are not saved since wandb.init() is not called')
 
     if args.wandb_on:
         # save log file
