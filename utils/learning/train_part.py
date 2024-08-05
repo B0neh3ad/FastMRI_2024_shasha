@@ -287,7 +287,9 @@ def train(args):
             train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
 
             val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
-            if args.lr_scheduler_on:
+            if args.lr_scheduler == "cosine":
+                scheduler.step()
+            else:
                 scheduler.step(val_loss)
 
             val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
@@ -326,7 +328,10 @@ def train(args):
             # use validation data to training
             val_loss, val_time = train_epoch(args, epoch, model, val_loader, optimizer, loss_type)
             if args.lr_scheduler_on:
-                scheduler.step(val_loss)
+                if args.lr_scheduler == "cosine":
+                    scheduler.step()
+                else:
+                    scheduler.step(val_loss)
 
             val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
             file_path = os.path.join(args.val_loss_dir, "val_loss_log")
@@ -335,7 +340,11 @@ def train(args):
 
             train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
 
-            save_model(args, args.exp_dir, epoch, model, optimizer, 0., True)
+            if args.wandb_on:
+                wandb.log({"epoch": epoch})
+                wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
+
+            save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, True)
             print(
                 f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
                 f'TrainTime = {train_time:.4f}s',
