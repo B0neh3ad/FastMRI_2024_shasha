@@ -14,9 +14,10 @@ python3.8 train.py \
   --cascade 6 \
   --chans 15 \
   --sens_chans 4 \
-  --optimizer 'adamw' \
-  --num-epochs 60 \
-  --lr 0.00001 \
+  --optimizer 'adam' \
+  --num-epochs 65 \
+  --loss 'ssim' \
+  --lr 0.00005 \
   --iters-to-grad-acc 1 \
   --aug_on \
   --mask_aug_on \
@@ -35,7 +36,7 @@ python3.8 train.py \
   --aug_min_scalex 0.8 \
   --wandb-on \
   --load-model \
-#  --mask_small_on \
+  --mask_small_on \
 #  --wandb-run-id
 
 

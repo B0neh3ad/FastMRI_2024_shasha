@@ -34,6 +34,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
     total_loss = 0.
     # gradient scaling
     scaler = torch.GradScaler(device='cuda')
+    rng = np.random.RandomState()
 
     for iter, data in enumerate(tqdm(data_loader)):
         # TODO: slice_idx가 높은 데이터들은 점점 제외하기
@@ -42,10 +43,11 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type):
         masked_kspace = masked_kspace.cuda(non_blocking=True) # undersampled kspace converted in DataTransform object
         target = target.cuda(non_blocking=True)
         maximum = maximum.cuda(non_blocking=True)
-        image_mask = get_mask(target)
 
-        if args.mask_small_on:
+        if args.mask_small_on and rng.uniform() < 0.5:
             image_mask = get_mask2(target) # smaller mask for high epochs to train inside of brain
+        else:
+            image_mask = get_mask(target)
 
         if args.amp:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
@@ -252,13 +254,13 @@ def train(args):
     best_val_loss = 1.
     start_epoch = 0
 
+    # Load checkpoint in /save if load_model is True
+    if args.load_model:
+        model, optimizer, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir / 'save')
+
     # Load checkpoint only if wandb_run_id is not None
     if args.wandb_run_id is not None:
         model, optimizer, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir)
-
-    # Load checkpoint in /save if load_model is True
-    if args.load_model:
-        model, _, start_epoch, best_val_loss = load_checkpoint(model, optimizer, args.exp_dir / 'save')
 
     epoch = start_epoch
 
