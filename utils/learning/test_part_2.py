@@ -52,7 +52,7 @@ def forward(args):
     model.to(device=device)
 
     checkpoint = torch.load(args.exp_dir / 'best_model.pt', map_location='cpu')
-    print("checkpoint's epoch:", checkpoint['epoch'], "/ best validation loss:", checkpoint['best_val_loss'].item())
+    print("checkpoint's epoch:", checkpoint['epoch'], "/ best validation loss:", checkpoint['best_val_loss'] if type(checkpoint['best_val_loss']) == float else checkpoint['best_val_loss'].item())
     model.load_state_dict(checkpoint['model'])
 
     forward_loader = create_image_data_loaders(
