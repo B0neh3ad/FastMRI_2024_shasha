@@ -344,8 +344,8 @@ def train(args):
 
             save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, True)
             print(
-                f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
-                f'TrainTime = {train_time:.4f}s',
+                f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
+                f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
             )
 
         try:

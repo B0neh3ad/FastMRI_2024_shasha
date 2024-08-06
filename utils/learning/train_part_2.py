@@ -200,7 +200,7 @@ def reconstruct_with_prev_net(args, device):
     model.to(device = device)
 
     checkpoint = torch.load(prev_exp_dir / 'best_model.pt', map_location='cpu')
-    print("checkpoint's epoch:", checkpoint['epoch'], "/ best validation loss:", checkpoint['best_val_loss'].item())
+    print("checkpoint's epoch:", checkpoint['epoch'], "/ best validation loss:", checkpoint['best_val_loss'] if type(checkpoint['best_val_loss']) == float else checkpoint['best_val_loss'].item())
     model.load_state_dict(checkpoint['model'])
 
     tmp_args = copy.deepcopy(args)
@@ -373,8 +373,8 @@ def train(args):
 
             save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, True)
             print(
-                f'Epoch = [{epoch + 1:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
-                f'TrainTime = {train_time:.4f}s',
+                f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
+                f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
             )
 
         try:
