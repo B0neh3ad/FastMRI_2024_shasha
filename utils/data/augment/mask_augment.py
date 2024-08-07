@@ -25,6 +25,7 @@ class MaskAugmentor:
         self.augmentation_strength = 0.0
         self.rng = np.random.RandomState()
         self.mask_func = EquiSpacedMaskFunc(center_fractions, accelerations, allow_any_combination)
+        self.low_to_high_acc = hparams.low_to_high_acc
 
     def __call__(self, shape, original_mask):
         """
@@ -39,7 +40,12 @@ class MaskAugmentor:
         else:
             p = 0.0
 
-        if self.aug_on and p > 0.0 and self.random_apply():
+        if self.aug_on:
+            if self.low_to_high_acc:
+                if p > 0.0 and self.random_apply():
+                    self.mask_func.accelerations = [7, 8, 9] # high acc
+                else:
+                    self.mask_func.accelerations = [4, 5, 6]  # low acc
             mask, _ = self.mask_func(shape)
             mask = mask.byte()
         else:

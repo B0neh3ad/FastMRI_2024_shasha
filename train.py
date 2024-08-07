@@ -68,6 +68,7 @@ def parse():
     parser.add_argument('--mask_aug_on', default=False, help='This switch turns mask augmentation on.', action='store_true')
     parser.add_argument('--aug_weight_mask', type=float, default=1.0, help='Weight of mask augmentation probability. Augmentation probability will be multiplied by this constant')
     parser.add_argument('--mask_small_on', default=False, help='This switch turns mask smaller', action='store_true')
+    parser.add_argument('--low_to_high_acc', default=False, help='This switch turns mask augmentation from low to high acc', action='store_true')
 
     # scheduler
     parser.add_argument('--lr-scheduler-on', default=False, help='This switch turns learning rate scheduler on.',
