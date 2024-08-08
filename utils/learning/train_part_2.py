@@ -367,15 +367,15 @@ def train(args):
             print(f"loss file saved! {file_path}")
 
             train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
-            # val_loss = torch.tensor(val_loss).cuda(non_blocking=True)
+            val_loss = torch.tensor(val_loss).cuda(non_blocking=True)
             # num_subjects = torch.tensor(num_subjects).cuda(non_blocking=True)
 
             # val_loss = val_loss / num_subjects
 
-            # is_new_best = val_loss < best_val_loss
-            # best_val_loss = min(best_val_loss, val_loss)
+            is_new_best = val_loss < best_val_loss
+            best_val_loss = min(best_val_loss, val_loss)
 
-            save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, True)
+            save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, is_new_best)
             print(
                 f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
                 f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
