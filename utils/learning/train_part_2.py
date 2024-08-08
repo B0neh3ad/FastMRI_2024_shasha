@@ -354,6 +354,7 @@ def train(args):
             train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type)
             # use validation data to training
             val_loss, val_time = train_epoch(args, epoch, model, val_loader, optimizer, loss_type)
+
             if args.lr_scheduler_on:
                 if args.lr_scheduler == "cosine":
                     scheduler.step()
@@ -366,16 +367,23 @@ def train(args):
             print(f"loss file saved! {file_path}")
 
             train_loss = torch.tensor(train_loss).cuda(non_blocking=True)
+            # val_loss = torch.tensor(val_loss).cuda(non_blocking=True)
+            # num_subjects = torch.tensor(num_subjects).cuda(non_blocking=True)
 
-            if args.wandb_on:
-                wandb.log({"epoch": epoch})
-                wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
+            # val_loss = val_loss / num_subjects
+
+            # is_new_best = val_loss < best_val_loss
+            # best_val_loss = min(best_val_loss, val_loss)
 
             save_model(args, args.exp_dir, epoch, model, optimizer, val_loss, True)
             print(
                 f'Epoch = [{epoch:4d}/{args.num_epochs:4d}] TrainLoss = {train_loss:.4g} '
                 f'ValLoss = {val_loss:.4g} TrainTime = {train_time:.4f}s ValTime = {val_time:.4f}s',
             )
+            if args.wandb_on:
+                wandb.log({"epoch": epoch})
+                wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
+
 
         try:
             # save model weights
