@@ -28,6 +28,7 @@ def parse():
     load_dotenv()
     result_dir_path = os.environ['RESULT_DIR_PATH']
     parser.add_argument('--result_dir_path', type=str, default=result_dir_path, help='Path to result directory')
+    parser.add_argument('--show_epoch', default=False, help='Show epoch', action='store_true')
 
     args = parser.parse_args()
     return args

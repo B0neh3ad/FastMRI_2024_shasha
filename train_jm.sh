@@ -14,10 +14,10 @@ python3.8 train.py \
   --cascade 6 \
   --chans 15 \
   --sens_chans 4 \
-  --optimizer 'adam' \
-  --num-epochs 65 \
-  --loss 'ssim' \
-  --lr 0.00005 \
+  --optimizer 'adamw' \
+  --num-epochs 60 \
+  --loss 'index_based' \
+  --lr 0.0001 \
   --iters-to-grad-acc 1 \
   --aug_on \
   --mask_aug_on \
@@ -31,12 +31,12 @@ python3.8 train.py \
   --aug_weight_contrast 0.5 \
   --aug_max_translation_x 0.1 \
   --aug_max_translation_y 0.1 \
-  --aug_max_rotation 20.0 \
+  --aug_max_rotation 25.0 \
   --aug_max_scaling 0.25 \
   --aug_min_scalex 0.8 \
   --wandb-on \
-  --load-model \
   --mask_small_on \
+  --load-model \
 #  --wandb-run-id
 
 
