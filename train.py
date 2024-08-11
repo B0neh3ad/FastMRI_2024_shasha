@@ -76,6 +76,8 @@ def parse():
     parser.add_argument('--lr-scheduler', type=str, default='plateau', help='Scheduler')
     parser.add_argument('--patience', type=int, default=2, help='Patience for reduce learning rate')
     parser.add_argument('--t-max', type=int, default=10, help='Period of learning rate when using cosine annealing')
+    parser.add_argument('--lr-step-size', type=int, default=10, help='Step size for learning rate scheduler')
+    parser.add_argument('--lr-gamma', type=float, default=0.5, help='gamma value for learning rate scheduler')
 
     # wandb
     parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')

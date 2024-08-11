@@ -46,8 +46,10 @@ class MaskAugmentor:
                     self.mask_func.accelerations = [7, 8, 9] # high acc
                 else:
                     self.mask_func.accelerations = [4, 5, 6]  # low acc
-            mask, _ = self.mask_func(shape)
-            mask = mask.byte()
+
+            if self.low_to_high_acc or p > 0.0 and self.random_apply():
+                mask, _ = self.mask_func(shape)
+                mask = mask.byte()
         else:
             mask = original_mask
 
