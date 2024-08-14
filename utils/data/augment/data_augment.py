@@ -449,7 +449,7 @@ class KspaceDataAugmentor:
         parser.add_argument(
             '--aug_weight_scalex',
             type=float,
-            default=1.0,
+            default=0.0,
             help='Weight of horizontal scaling probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
@@ -479,7 +479,7 @@ class KspaceDataAugmentor:
         parser.add_argument(
             '--aug_weight_contrast',
             type=float,
-            default=1.0,
+            default=0.0,
             help='Weight of probability of contrast variation. Augmentation probability will be multiplied to this constant'
         )
 
@@ -489,13 +489,13 @@ class KspaceDataAugmentor:
         parser.add_argument(
             '--aug_max_translation_x', 
             type=float,
-            default=0.125, 
+            default=0.06,
             help='Maximum translation applied along the x axis as fraction of image width'
         )
         parser.add_argument(
             '--aug_max_translation_y',
             type=float, 
-            default=0.125, 
+            default=0.06,
             help='Maximum translation applied along the y axis as fraction of image height'
         )
         parser.add_argument(
@@ -507,13 +507,13 @@ class KspaceDataAugmentor:
         parser.add_argument(
             '--aug_max_shearing_x', 
             type=float, 
-            default=15.0, 
+            default=5.0,
             help='Maximum shearing applied in either positive or negative direction in degrees along x axis.'
         )
         parser.add_argument(
             '--aug_max_shearing_y', 
             type=float, 
-            default=15.0, 
+            default=5.0,
             help='Maximum shearing applied in either positive or negative direction in degrees along y axis.'
         )
         parser.add_argument(
