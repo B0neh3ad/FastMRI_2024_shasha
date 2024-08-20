@@ -257,13 +257,7 @@ def train(args):
     # create reconstructions from previous network
     reconstruct_with_prev_net(args, device)
 
-    # second model (image-to-image)
-    if args.net_name == 'kbnet_s':
-        model = KBNet_s()
-    elif args.net_name == 'kbnet_l':
-        model = KBNet_l()
-    else:
-        model = NAFNet()
+    model = NAFNet()
     model.to(device=device)
 
     # loss
@@ -383,7 +377,6 @@ def train(args):
             if args.wandb_on:
                 wandb.log({"epoch": epoch})
                 wandb.log({"train_loss": train_loss, "val_loss": val_loss, "train_time": train_time, "val_time": val_time})
-
 
         try:
             # save model weights
