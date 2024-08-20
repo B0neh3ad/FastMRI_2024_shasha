@@ -8,7 +8,7 @@ VarNet + NAFNet
 Training consists of three steps:
 1. Train VarNet 50 epochs
 2. Train VarNet (from step 1) 15 epochs more
-3. Train NAFNet 15 epochs
+3. Train NAFNet 10 epochs
 
 The input of NAFNet consists of three images:   
 - aliased image(`image_input`)
