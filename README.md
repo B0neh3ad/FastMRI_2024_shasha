@@ -51,7 +51,6 @@ Python 3.8.10
 │       │   └── nafnet.py
 │       └── varnet
 │           └── varnet.py
-├── Data
 └── result
 ```
 
