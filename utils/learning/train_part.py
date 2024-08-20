@@ -218,15 +218,9 @@ def train(args):
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
 
-    # first model (kspace-to-image)
-    if args.net_name == 'dircn':
-        model = DIRCN(num_cascades=args.cascade,
-                               n=args.chans,
-                               sense_n=args.sens_chans)
-    else:
-        model = VarNet(num_cascades=args.cascade,
-                                chans=args.chans,
-                                sens_chans=args.sens_chans)
+    model = VarNet(num_cascades=args.cascade,
+                            chans=args.chans,
+                            sens_chans=args.sens_chans)
     model.to(device=device)
 
     # loss
