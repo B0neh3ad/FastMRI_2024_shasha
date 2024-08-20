@@ -69,6 +69,11 @@ Python 3.8.10
    DATA_DIR_PATH="{path to training data}"
    RESULT_DIR_PATH="{path to folder in which result data will be saved}"
    ```
+   In vessl server,
+   ```bash
+   DATA_DIR_PATH="/home/Data"
+   RESULT_DIR_PATH="./result"
+   ```
 
 ## 4. Train, Reconstruct, and Evaluate LB Dataset
 ```bash
