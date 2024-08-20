@@ -41,7 +41,9 @@ Python 3.8.10
 │   │   └── transforms.py
 │   ├── learning
 │   │   ├── test_part.py
-│   │   └── train_part.py
+│   │   ├── test_part_2.py
+│   │   ├── train_part.py # for training VarNet
+│   │   └── train_part_2.py # for training NafNet
 │   └── model
 │       ├── nafnet
 │       │   └── nafnet.py
