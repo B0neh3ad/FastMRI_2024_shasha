@@ -4,10 +4,8 @@ if [ -f .env ]; then
   export $(cat .env | grep -v '^#' | xargs)
 fi
 
-python3.8 reconstruct.py \
+python3.8 reconstruct_2.py \
   -b 2 \
-  -n 'test_Varnet' \
+  -n "nafnet" \
   -p "$DATA_DIR_PATH/leaderboard" \
-  --cascade 6 \
-  --chans 15 \
-  --sens_chans 4
+  --prev-net-name 'test_Varnet'
