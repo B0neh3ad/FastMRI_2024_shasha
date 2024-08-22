@@ -8,4 +8,4 @@ python3.8 reconstruct_2.py \
   -b 2 \
   -n "nafnet" \
   -p "$DATA_DIR_PATH/leaderboard" \
-  --prev-net-name 'test_Varnet'
+  --prev-net-name 'varnet'
