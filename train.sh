@@ -4,12 +4,11 @@ if [ -f .env ]; then
   export $(cat .env | grep -v '^#' | xargs)
 fi
 
-python3.8 train.py \
-  -b 1 \
-  -e 15 \
+# step 1: Train VarNet 50 epochs
+train.py -b 1 \
+  -e 50 \
   -l 0.0001 \
-  -n "dircn" \
-  -r 10 \
+  -n "varnet" \
   -t "$DATA_DIR_PATH/train/" \
   -v "$DATA_DIR_PATH/val/" \
   --cascade 6 \
@@ -17,26 +16,65 @@ python3.8 train.py \
   --sens_chans 4 \
   --aug_on \
   --mask_aug_on \
+  --aug_strength 0.4 \
+  --aug_weight_brightness 0.5 \
+  --aug_weight_contrast 0.5 \
+  --aug_min_scalex 0.9 \
+  --aug_max_scaling 0.25 \
+  --aug_weight_translation 1.0 \
+  --aug_max_rotation 20
+
+mv result/varnet/checkpoints/model.pt result/varnet/checkpoints/save/model.pt
+mv result/varnet/val_loss_log.npy result/varnet/checkpoints/save/val_loss_log.npy
+
+# step 2: Train VarNet (from step 1) 15 epochs more with different setting
+python3.8 train.py -b 1 \
+  -e 65 \
+  -l 0.0001 \
+  -n "varnet" \
+  -t "$DATA_DIR_PATH/train/" \
+  -v "$DATA_DIR_PATH/val/" \
+  --seed 430 \
+  --cascade 6 \
+  --chans 15 \
+  --sens_chans 4 \
+  --optimizer "adamw" \
+  --loss "index_based" \
+  --aug_on \
+  --mask_aug_on \
+  --aug_strength 0.6 \
+  --aug_weight_translation 1.0 \
+  --aug_weight_rotation 1.0 \
+  --aug_weight_shearing 0.0 \
+  --aug_weight_scaling 1.0 \
+  --aug_weight_flipv 0.0 \
+  --aug_weight_brightness 1.0 \
+  --aug_weight_contrast 0.5 \
+  --aug_max_translation_x 0.1 \
+  --aug_max_translation_y 0.1 \
+  --aug_max_rotation 25.0 \
+  --aug_max_scaling 0.25 \
+  --aug_min_scalex 0.8 \
+  --load-model \
+  --mask_small_on
+
+# step 3: train NAFNet 10 epochs
+python3.8 train_2.py -b 2 \
+  -e 10 \
+  -l 0.0001 \
+  -n "nafnet" \
+  -t "$DATA_DIR_PATH/train/" \
+  -v "$DATA_DIR_PATH/val/" \
+  --loss "index_based" \
+  --optimizer "adamw" \
+  --prev-net-name "varnet" \
+  --cascade 6 \
+  --chans 15 \
+  --sens_chans 4 \
+  --grad-clip-on \
+  --aug_on \
   --aug_strength 0.5 \
-  --loss "mixed" \
-  --alpha 0.5 \
-  --iters-to-grad-acc 32 \
-  --wandb-on
-
-#  --aug_weight_translation 0.5 \
-#  --aug_weight_rotation 0.5 \
-#  --aug_weight_shearing 0.5 \
-#  --aug_weight_scale 0.5 \
-
-# 사용 금지 option 목록
-# --amp: loss 값이 이상해짐
-# --aug-weight-rot90: MRAugment의 rot90을 이용한 90도 회전 시 가로 세로 길이가 바뀌어 mask 사용 불가
-
-# -g, --GPU-NUM: Specifies the GPU number to use for training.
-# -b, --batch-size: Sets the batch size for training.
-# -e, --num-epochs: Defines the number of epochs for the training process.
-# -l, --lr: Sets the learning rate.
-# -r, --report-interval: Determines how often to report training progress.
-# -n, --net-name: Names the network for identification purposes.
-# -t, --data-path-train: Specifies the directory containing training data.
-# -v, --data-path-val: Specifies the directory containing validation data.
+  --lr-scheduler "cosine" \
+  --lr-scheduler-on \
+  --recon-train \
+  --recon-val
