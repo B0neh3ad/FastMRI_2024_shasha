@@ -249,7 +249,7 @@ def train(args):
 
     # Load checkpoint in /save if load_model is True
     if args.load_model:
-        model, optimizer, start_epoch, _ = load_checkpoint(model, optimizer, args.exp_dir / 'save')
+        model, optimizer, start_epoch, _ = load_checkpoint(model, optimizer, args.exp_dir)
 
     # Load checkpoint only if wandb_run_id is not None
     if args.wandb_run_id is not None:

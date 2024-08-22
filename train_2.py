@@ -98,13 +98,6 @@ def parse():
 
     args = parser.parse_args()
 
-    # wandb sweep args parsing
-    sweep_args = load_yaml('train_2_sweep.yaml')
-    for key in sweep_args:
-        if key in args:
-            args[key] = sweep_args[key]
-    return args
-
 def start_train():
     args = parse()
 
