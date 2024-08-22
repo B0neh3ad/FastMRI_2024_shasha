@@ -5,27 +5,28 @@ if [ -f .env ]; then
 fi
 
 # step 1: Train VarNet 50 epochs
-train.py -b 1 \
-  -e 50 \
-  -l 0.0001 \
-  -n "varnet" \
-  -t "$DATA_DIR_PATH/train/" \
-  -v "$DATA_DIR_PATH/val/" \
-  --cascade 6 \
-  --chans 15 \
-  --sens_chans 4 \
-  --aug_on \
-  --mask_aug_on \
-  --aug_strength 0.4 \
-  --aug_weight_brightness 0.5 \
-  --aug_weight_contrast 0.5 \
-  --aug_min_scalex 0.9 \
-  --aug_max_scaling 0.25 \
-  --aug_weight_translation 1.0 \
-  --aug_max_rotation 20
+#train.py -b 1 \
+#  -e 50 \
+#  -l 0.0001 \
+#  -n "varnet" \
+#  -t "$DATA_DIR_PATH/train/" \
+#  -v "$DATA_DIR_PATH/val/" \
+#  --cascade 6 \
+#  --chans 15 \
+#  --sens_chans 4 \
+#  --aug_on \
+#  --mask_aug_on \
+#  --aug_strength 0.4 \
+#  --aug_weight_brightness 0.5 \
+#  --aug_weight_contrast 0.5 \
+#  --aug_min_scalex 0.9 \
+#  --aug_max_scaling 0.25 \
+#  --aug_weight_translation 1.0 \
+#  --aug_max_rotation 20
 
-mv result/varnet/checkpoints/model.pt result/varnet/checkpoints/save/model.pt
-mv result/varnet/val_loss_log.npy result/varnet/checkpoints/save/val_loss_log.npy
+mkdir result/varnet/ckeckpoints/save
+cp result/varnet/checkpoints/model.pt result/varnet/checkpoints/save/model.pt
+cp result/varnet/val_loss_log.npy result/varnet/checkpoints/save/val_loss_log.npy
 
 # step 2: Train VarNet (from step 1) 15 epochs more with different setting
 python3.8 train.py -b 1 \

@@ -14,9 +14,6 @@ from utils.data.augment.image_augment import CutMixUp, ImageDataAugmentor
 from utils.data.load_data import create_kspace_data_loaders, create_image_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss, get_mask
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
-from utils.model.dircn.dircn import DIRCN
-from utils.model.kbnet.kbnet_l import KBNet_l
-from utils.model.kbnet.kbnet_s import KBNet_s
 from utils.model.nafnet.nafnet import NAFNet
 from utils.model.varnet.varnet import VarNet
 
