@@ -55,18 +55,13 @@ Python 3.8.10
 ```
 
 ## 3. How to set?
-1. apt update
-     ```bash
-     sudo apt install -y build-essential libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev liblzma-dev uuid-dev
-     ```
-
-2. Install required packages
+1. Install required packages
      ```bash
      pip install fastmri wandb python-dotenv matplotlib lmdb einops pygrappa
      pip install opencv-python==4.8.0.74
      ```
     
-3. Create `.env` file and set environment variables
+2. Create `.env` file and set environment variables
    ```bash
    cd /FastMRI_2024_shasha
    vim .env
