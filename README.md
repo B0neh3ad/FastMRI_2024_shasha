@@ -23,12 +23,12 @@ Python 3.8.10
 ├── leaderboard_eval.py
 ├── leaderboard_eval.sh
 ├── README.md
-├── reconstruct.py
-├── reconstruct.sh
-├── reconstruct_2.py
-├── train.py
+├── reconstruct.py # reconstruct with VarNet
+├── reconstruct.sh 
+├── reconstruct_2.py # reconstruct with NAFNet
+├── train.py # train VarNet
 ├── train.sh
-├── train_2.py
+├── train_2.py # train NAFNet
 └── utils
 │   ├── common
 │   │   ├── loss_function.py
@@ -45,7 +45,7 @@ Python 3.8.10
 │   │   ├── test_part.py
 │   │   ├── test_part_2.py
 │   │   ├── train_part.py # for training VarNet
-│   │   └── train_part_2.py # for training NafNet
+│   │   └── train_part_2.py # for training NAFNet
 │   └── model
 │       ├── nafnet
 │       │   └── nafnet.py
