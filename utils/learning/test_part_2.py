@@ -4,8 +4,6 @@ import torch
 from collections import defaultdict
 from utils.common.utils import save_reconstructions
 from utils.data.load_data import create_image_data_loaders
-from utils.model.kbnet.kbnet_l import KBNet_l
-from utils.model.kbnet.kbnet_s import KBNet_s
 from utils.model.nafnet.nafnet import NAFNet
 
 from tqdm import tqdm
@@ -43,12 +41,7 @@ def forward(args):
     print ('Current cuda device: ', torch.cuda.current_device())
 
     # second model (image-to-image)
-    if args.net_name == 'kbnet_s':
-        model = KBNet_s()
-    elif args.net_name == 'kbnet_l':
-        model = KBNet_l()
-    else:
-        model = NAFNet()
+    model = NAFNet()
     model.to(device=device)
 
     checkpoint = torch.load(args.exp_dir / 'best_model.pt', map_location='cpu')

@@ -40,6 +40,7 @@ class MaskAugmentor:
         else:
             p = 0.0
 
+        mask = original_mask
         if self.aug_on:
             if self.low_to_high_acc:
                 if p > 0.0 and self.random_apply():
@@ -50,8 +51,6 @@ class MaskAugmentor:
             if self.low_to_high_acc or p > 0.0 and self.random_apply():
                 mask, _ = self.mask_func(shape)
                 mask = mask.byte()
-        else:
-            mask = original_mask
 
         return mask
 

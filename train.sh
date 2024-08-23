@@ -5,7 +5,7 @@ if [ -f .env ]; then
 fi
 
 # step 1: Train VarNet 50 epochs
-train.py -b 1 \
+python3.8 train.py -b 1 \
   -e 50 \
   -l 0.0001 \
   -n "varnet" \

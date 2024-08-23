@@ -81,7 +81,7 @@ def parse():
 
     # wandb
     parser.add_argument('--wandb-on', default=False, help='This switch turns WandB logging on.', action='store_true')
-    parser.add_argument('--load-model', default=False , help='Load last model. in /checkpoints/save Do not use with --wandb-run-id', action='store_true')
+    parser.add_argument('--load-model', default=False , help='Load last model from /checkpoints. Do not use with --wandb-run-id', action='store_true')
     parser.add_argument('--wandb-run-id', type=str, default=None, help='WandB run ID to resume. If not provided, starts a new run.')
 
     load_dotenv()

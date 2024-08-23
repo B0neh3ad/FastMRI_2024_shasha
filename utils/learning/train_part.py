@@ -10,7 +10,6 @@ from collections import defaultdict
 from utils.data.load_data import create_kspace_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss, get_mask, get_mask2
 from utils.common.loss_function import SSIMLoss, MixedLoss, CustomFocalLoss, IndexBasedWeightedLoss
-from utils.model.dircn.dircn import DIRCN
 from utils.model.varnet.varnet import VarNet
 
 import os
@@ -250,7 +249,7 @@ def train(args):
 
     # Load checkpoint in /save if load_model is True
     if args.load_model:
-        model, optimizer, start_epoch, _ = load_checkpoint(model, optimizer, args.exp_dir / 'save')
+        model, optimizer, start_epoch, _ = load_checkpoint(model, optimizer, args.exp_dir)
 
     # Load checkpoint only if wandb_run_id is not None
     if args.wandb_run_id is not None:
