@@ -84,9 +84,12 @@ sh leaderboard_eval.sh
 ```
 
 ## 5. Path to weight, validation loss files
+- Step 1
+     - weight: `result/varnet/checkpoints/model.pt`
+     - validation loss: `result/varnet/val_loss_log_1.npy`    
 - Step 2
      - weight: `result/varnet/checkpoints/best_model.pt`
-     - validation loss: `result/varnet/val_loss_log.npy`
+     - validation loss: `result/varnet/val_loss_log_2.npy`
 - Step 3
      - weight: `result/nafnet/checkpoints/best_model.pt`
      - validation loss: `result/nafnet/val_loss_log.npy`
