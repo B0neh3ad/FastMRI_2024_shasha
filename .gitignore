@@ -161,8 +161,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-# wandb log dir
+# wandb-related
 wandb
-result/
-requirements.txt
 sweep.yaml
+
+result/*/reconstructions_*
+
+requirements.txt
