@@ -1,6 +1,6 @@
 # 2024 SNU FastMRI Challenge
 Team Name: 샤샤  
-Leaderboard SSIM Score: **0.9802**
+Leaderboard SSIM Score: **0.9803**
 
 ## 1. Model description
 VarNet + NAFNet
