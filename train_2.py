@@ -98,6 +98,8 @@ def parse():
 
     args = parser.parse_args()
 
+    return args
+
 def start_train():
     args = parse()
 
